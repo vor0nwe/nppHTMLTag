@@ -1,0 +1,26 @@
+TODO for HTMLTag plugin
+=======================
+
+[Bugs]
+
+[Features]
+* Options:
+  - Whether to use 'smart encoding' (ie. no encoding within tags)
+  - Add a settings file to incorporate options; incorporate the settings on a separate section of
+    the menu (separated by a separator bar)
+* Commands:
+  - [Request#1848503] close open tag with shortcut
+  - Add command to encode contents only (only apply encoding when not inside tags; leave valid tags
+    and entities alone)
+  - rename matching tags (like Ctrl-Shift-E in Delphi 2006)
+  - add option to select tags only (both start tag and end tag, using multiple selection streams
+    feature of Np++ v5.5 and up)
+* On the fly (react to notifications and/or messages):
+  - encode special characters on the fly (special cases: '<' only when inserting a space directly
+    after it; '>' only when not after an unclosed '<'; perhaps not '&' when followed by a valid
+    entity reference)
+  - autoclose tags: typing '</' would close latest unclosed tag
+  - *simultaneously* rename matching tags (like Ctrl-Shift-E in Delphi 2006)
+  - [Request#2147949] drop down list of tags on '<', and list of attributes on space after a tag
+    (like Stylus does)
+
