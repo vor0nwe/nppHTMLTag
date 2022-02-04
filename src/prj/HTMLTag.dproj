@@ -134,7 +134,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="..\LibNppPlugin\NppSimpleObjects.pas"/>
         <DCCReference Include="..\LibNppPlugin\NppPluginConstants.pas"/>
         <DCCReference Include="..\LibNppPlugin\NppPluginInterface.pas"/>
-        <DCCReference Include="..\LibNppPlugin\NppScintillaConstants.pas"/>
         <DCCReference Include="..\lib\nppplugin.pas"/>
         <DCCReference Include="..\lib\SciSupport.pas">
             <Form>$R *.res</Form>

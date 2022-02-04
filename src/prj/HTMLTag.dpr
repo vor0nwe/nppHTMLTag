@@ -23,7 +23,6 @@ uses
   NppSimpleObjects in '..\LibNppPlugin\NppSimpleObjects.pas',
   NppPluginConstants in '..\LibNppPlugin\NppPluginConstants.pas',
   NppPluginInterface in '..\LibNppPlugin\NppPluginInterface.pas',
-  NppScintillaConstants in '..\LibNppPlugin\NppScintillaConstants.pas',
   nppplugin in '..\lib\nppplugin.pas',
   SciSupport in '..\lib\SciSupport.pas',
   U_TagMatcher in '..\U_TagMatcher.pas';

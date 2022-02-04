@@ -11,7 +11,7 @@ implementation
 
 uses
   SysUtils, Windows, Classes, Character,
-  NppPluginConstants, NppScintillaConstants;
+  NppPluginConstants, SciSupport;
 
 type
   TDirectionEnum = (dirBackward = -1, dirNone = 0, dirForward = 1, dirUnknown = 2);

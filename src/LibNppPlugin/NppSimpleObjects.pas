@@ -267,7 +267,7 @@ implementation
 uses
   SysUtils,
 //  L_DebugLogger,
-  NppScintillaConstants;
+  SciSupport;
 
 var
   Application: TApplication;
