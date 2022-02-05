@@ -58,7 +58,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
         <DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
         <DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
         <SanitizedProjectName>HTMLTag</SanitizedProjectName>
@@ -66,7 +66,7 @@
         <PostBuildEventCancelOnError>false</PostBuildEventCancelOnError>
         <VerInfo_DLL>true</VerInfo_DLL>
         <DCC_ImageBase>00400000</DCC_ImageBase>
-        <VerInfo_Keys>CompanyName=Voronwë;FileDescription=HTMLTag plugin for Notepad++;FileVersion=1.1.0.0;InternalName=HTMLTag;LegalCopyright=Martijn Coppoolse;LegalTrademarks=;OriginalFilename=HTMLTag.dll;ProductName=Notepad++;ProductVersion=7.0.0.0;Comments=http://fossil.2of4.net/npp_htmltag</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Voronwë;FileDescription=HTMLTag plugin for Notepad++;FileVersion=1.2.0.0;InternalName=HTMLTag;LegalCopyright=Martijn Coppoolse;LegalTrademarks=;OriginalFilename=HTMLTag.dll;ProductName=Notepad++;ProductVersion=7.0.0.0;Comments=https://bitbucket.org/rdipardo/htmltag/issues</VerInfo_Keys>
         <DCC_UsePackage>vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;dOCI6;CoolTrayIcon_D6plus;curlpkg;ThemeManagerD6;VirtualTreesD6;Jcl;JclVcl;JvCoreD6R;JvSystemD6R;JvStdCtrlsD6R;JvAppFrmD6R;JvBandsD6R;JvDBD6R;JvDlgsD6R;JvBDED6R;JvCmpD6R;JvCryptD6R;JvCtrlsD6R;JvCustomD6R;JvDockingD6R;JvDotNetCtrlsD6R;JvEDID6R;JvGlobusD6R;JvHMID6R;JvInterpreterD6R;JvJansD6R;JvManagedThreadsD6R;JvMMD6R;JvNetD6R;JvPageCompsD6R;JvPluginD6R;JvPrintPreviewD6R;JvRuntimeDesignD6R;JvTimeFrameworkD6R;JvUIBD6R;JvValidatorsD6R;JvWizardD6R;JvXPCtrlsD6R;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_ExeOutput>..\..\out\$(PLATFORM)\$(CONFIG)</DCC_ExeOutput>
         <DCC_Define>NPPUNICODE;$(DCC_Define)</DCC_Define>
@@ -113,6 +113,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <VerInfo_Debug>true</VerInfo_Debug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>

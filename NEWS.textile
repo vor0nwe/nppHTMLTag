@@ -1,0 +1,11 @@
+h2. Changes since v1.1
+
+* 1.2.0 (2022-02-05)
+** Fixed: made it safe for x64 binaries to call into the @SCI_GETTEXTRANGE@ API without causing access violations in Notepad++ 8.3. Go "here":cref for a brief summary of the "breaking change":db330832 this addresses
+** Fixed: the JS entity decode feature can once again translate Unicode escapes without crashing the editor, as was reported "here":jsDecodeBug
+** Changed: moved development to a "new repository":https://bitbucket.org/rdipardo/htmltag
+
+
+[db330832]https://github.com/notepad-plus-plus/notepad-plus-plus/commit/db3308329bd23a073b7de6f4ded2a523b282fcc3#diff-8968b5cad4cc8f62c9204894eea9941dac353af428a26be64f52055e99992040
+[cref]https://community.notepad-plus-plus.org/topic/22471/recompile-your-x64-plugins-with-new-header
+[jsDecodeBug]https://community.notepad-plus-plus.org/topic/18488/htmltag-1-1-plugin-broken-since-npp-7-7

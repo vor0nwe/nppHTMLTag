@@ -261,22 +261,24 @@ begin
     Version := TFileVersionInfo.Create(DLLName);
     try
       Text := Format('%s v%s %s'#10#10
-                      + 'Plug-in location:'#9'%s'#10
-                      + 'Config location:'#9'%s'#10
-                      + 'Download:'#9'%s'#10#10
-                      + '® 2011-%d %s - %s'#10
-                      + '  a.k.a. %s - %s'#10#10
+                      + 'Plug-in location: %s'#10
+                      + 'Config location: %s'#10
+                      + 'Bugs: %s'#10
+                      + 'Download: %s'#10#10
+                      + #$00A9' 2011-2020 %s - %s'#10
+                      + '  a.k.a. %s - %s (v0.1 - v1.1)'#10
+                      + #$00A9' 2022 Robert Di Pardo (v1.2 -)'#10#10
                       + 'Licensed under the %s - %s',
                      [ExtractFileName(DLLName), Version.FileVersion,
                       {$IFDEF WIN64}'(64-bits)'{$ELSE}'(32-bits)'{$ENDIF},
                       ExtractFilePath(DLLName),
                       App.ConfigFolder,
-                      'http://fossil.2of4.net/npp_htmltag',
-                      YearOf(Now), Version.LegalCopyright, Version.Comments, // 'http://martijn.coppoolse.com/software',
+                      Version.Comments,
+                      'https://bitbucket.org/rdipardo/htmltag/downloads',
+                      Version.LegalCopyright, 'http://fossil.2of4.net/npp_htmltag', // 'http://martijn.coppoolse.com/software',
                       'vor0nwe', 'http://sourceforge.net/users/vor0nwe',
-                      'MPL 1.1', 'http://www.mozilla.org/MPL/MPL-1.1.txt']);
-      if MessageBox(App.WindowHandle, PChar(Text), PChar(Version.FileDescription), MB_OKCANCEL or MB_ICONINFORMATION) = ID_OK then
-        ShellExecute(Version.Comments, 'open');
+                      'MPL 1.1', 'http://www.mozilla.org/MPL/1.1']);
+      MessageBox(App.WindowHandle, PChar(Text), PChar(Version.FileDescription), MB_ICONINFORMATION)
     finally
       FreeAndNil(Version);
     end;
