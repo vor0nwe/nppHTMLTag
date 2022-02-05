@@ -143,9 +143,6 @@ interface
         function  GetSelection: TSelection;
         function  GetFirstVisibleLine: integer;
         function  GetLinesOnScreen: integer;
-      protected
-        function  AdjustToCodePage(const AText: WideString): AnsiString;
-        function  AdjustFromCodePage(const AText: AnsiString): WideString;
       public
         destructor Destroy(); override;
 
@@ -380,18 +377,20 @@ begin
   tr.chrg.cpMax := FEndPos;
   tr.lpstrText := PAnsiChar(Chars);
   System.SetLength(Chars, FEditor.SendMessage(SCI_GETTEXTRANGE, 0, @tr));
-  Result := FEditor.AdjustFromCodePage(Chars);
+  Result := WideString(Chars);
 end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TTextRange.SetText(const AValue: WideString);
 var
   Chars: AnsiString;
+  TxtRng: Integer;
 begin
-  Chars := FEditor.AdjustToCodePage(AValue);
+  Chars := UTF8Encode(AValue);
+  TxtRng := System.Length(Chars);
 //DebugWrite('TTextRange.SetText', Chars);
   FEditor.SendMessage(SCI_SETTARGETSTART, FStartPos);
   FEditor.SendMessage(SCI_SETTARGETEND, FEndPos);
-  Dec(FEndPos, (FEndPos - FStartPos) - Integer(FEditor.SendMessage(SCI_REPLACETARGET, High(Cardinal), PAnsiChar(Chars))));
+  Dec(FEndPos, (FEndPos - FStartPos) - Integer(FEditor.SendMessage(SCI_REPLACETARGET, TxtRng, PAnsiChar(Chars))));
 end;
 
 
@@ -554,7 +553,7 @@ var
 begin
   Chars := AnsiString(StringOfChar(#0, Self.GetLength + 1));
   FEditor.SendMessage(SCI_GETSELTEXT, 0, PAnsiChar(Chars));
-  Result := FEditor.AdjustFromCodepage(Chars);
+  Result := WideString(Chars);
 //  DebugWrite('TSelection.GetText', Result);
 end;
 { ------------------------------------------------------------------------------------------------ }
@@ -564,7 +563,7 @@ var
   NewLength, EndPos: integer;
   Reversed: boolean;
 begin
-  Chars := FEditor.AdjustToCodePage(AValue);
+  Chars := UTF8Encode(AValue);
 //DebugWrite('TSelection.SetText', Chars);
   NewLength := System.Length(Chars) - 1;
   Reversed := (Self.Anchor > Self.GetCurrentPos);
@@ -1245,7 +1244,7 @@ begin
     TTF.chrg.cpMax := High(TTF.chrg.cpMax)
   else
     TTF.chrg.cpMax := AEndPos;
-  TTF.lpstrText := PAnsiChar(AdjustToCodePage(AText));
+  TTF.lpstrText := PAnsiChar(UTF8Encode(AText));
   TTF.chrgText := TTF.chrg;
   StartPos := SendMessage(SCI_FINDTEXT, AOptions, @TTF);
   if StartPos = -1 then begin
@@ -1349,40 +1348,6 @@ begin
   if SelMode <> SC_SEL_LINES then
     SendMessage(SCI_SETSELECTIONMODE, SelMode);
 end;
-
-{ ------------------------------------------------------------------------------------------------ }
-
-function TActiveDocument.AdjustFromCodePage(const AText: AnsiString): WideString;
-var
-  CP: integer;
-  ReqSize: integer;
-begin
-  CP := SendMessage(SCI_GETCODEPAGE);
-  if CP = 0 then begin
-    Result := WideString(AText);
-  end else begin
-    ReqSize := MultiByteToWideChar(CP, 0, PAnsiChar(AText), System.Length(AText), nil, 0);
-    Result := StringOfChar(WideChar(#0), ReqSize + 1);
-    SetLength(Result, MultiByteToWideChar(CP, 0, PAnsiChar(AText), System.Length(AText), PWChar(Result), ReqSize + 1));
-  end;
-end;
-{ ------------------------------------------------------------------------------------------------ }
-function TActiveDocument.AdjustToCodePage(const AText: WideString): AnsiString;
-var
-  CP: integer;
-  ReqSize: integer;
-begin
-  CP := SendMessage(SCI_GETCODEPAGE);
-  if CP = 0 then begin
-    Result := UTF8Encode(AText);
-  end else begin
-    ReqSize := WideCharToMultiByte(CP, 0, PWChar(AText), System.Length(AText), nil, 0, nil, nil);
-    Result := AnsiString(StringOfChar(#0, ReqSize + 1));
-    SetLength(Result, WideCharToMultiByte(CP, 0, PWChar(AText), System.Length(AText), PAnsiChar(Result), ReqSize + 1, nil, nil));
-  end;
-end;
-
-
 
 { ================================================================================================ }
 { TEditors }
@@ -1518,14 +1483,14 @@ var
 begin
   SetLength(Chars, SendMessage(SCI_GETTEXT, High(Cardinal), nil));
   SendMessage(SCI_GETTEXT, System.Length(Chars), PAnsiChar(Chars));
-  Result := AdjustFromCodePage(Chars);
+  Result := WideString(Chars);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
 procedure TActiveDocument.Insert(const Text: WideString; const Position: cardinal);
 begin
-  SendMessage(SCI_INSERTTEXT, Position, PAnsiChar(AdjustToCodePage(Text)));
+  SendMessage(SCI_INSERTTEXT, Position, PAnsiChar(UTF8Encode(Text)));
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -1550,7 +1515,7 @@ end;
 
 procedure TActiveDocument.SetText(const AValue: WideString);
 begin
-  SendMessage(SCI_SETTEXT, 0, PAnsiChar(AdjustToCodePage(AValue)));
+  SendMessage(SCI_SETTEXT, 0, PAnsiChar(UTF8Encode(AValue)));
 end;
 
 { ================================================================================================ }
