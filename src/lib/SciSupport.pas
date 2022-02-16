@@ -10,14 +10,17 @@ interface
 uses Windows;
 
 type
-  TScintillaMessageFnc = function(ptr : Pointer; Msg: UINT; wParam: WPARAM; lParam : LPARAM) : LRESULT; cdecl;
   uptr_t = NativeUInt;
   sptr_t = NativeInt;
+  Sci_Position = NativeInt;
+  Sci_PositionU = SIZE_T;
+
+  TScintillaMessageFnc = function(ptr : sptr_t; Msg: UINT; wParam: uptr_t; lParam : sptr_t) : sptr_t; cdecl;
 
   TNotifyHeader = record
 	  hwndFrom : HWND;
 	  idFrom : uptr_t;
-	  code : NativeUInt;
+	  code : UINT;
   end;
   PSCNotification = ^TSCNotification;
   TSCNotification = record

@@ -69,7 +69,7 @@
         <VerInfo_Keys>CompanyName=Voronwë;FileDescription=HTMLTag plugin for Notepad++;FileVersion=1.2.0.0;InternalName=HTMLTag;LegalCopyright=Martijn Coppoolse;LegalTrademarks=;OriginalFilename=HTMLTag.dll;ProductName=Notepad++;ProductVersion=7.0.0.0;Comments=https://bitbucket.org/rdipardo/htmltag/issues</VerInfo_Keys>
         <DCC_UsePackage>vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;dOCI6;CoolTrayIcon_D6plus;curlpkg;ThemeManagerD6;VirtualTreesD6;Jcl;JclVcl;JvCoreD6R;JvSystemD6R;JvStdCtrlsD6R;JvAppFrmD6R;JvBandsD6R;JvDBD6R;JvDlgsD6R;JvBDED6R;JvCmpD6R;JvCryptD6R;JvCtrlsD6R;JvCustomD6R;JvDockingD6R;JvDotNetCtrlsD6R;JvEDID6R;JvGlobusD6R;JvHMID6R;JvInterpreterD6R;JvJansD6R;JvManagedThreadsD6R;JvMMD6R;JvNetD6R;JvPageCompsD6R;JvPluginD6R;JvPrintPreviewD6R;JvRuntimeDesignD6R;JvTimeFrameworkD6R;JvUIBD6R;JvValidatorsD6R;JvWizardD6R;JvXPCtrlsD6R;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_ExeOutput>..\..\out\$(PLATFORM)\$(CONFIG)</DCC_ExeOutput>
-        <DCC_Define>NPPUNICODE;$(DCC_Define)</DCC_Define>
+        <DCC_Define>UNICODE;NPPUNICODE;$(DCC_Define)</DCC_Define>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Winapi;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_UnitSearchPath>..\;$(DELPHI)\Lib\Debug;C:\PROGRA~1\Jedi\jcl\lib\d6\debug;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
@@ -83,6 +83,8 @@
         <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
         <DCC_E>false</DCC_E>
         <DCC_DcuOutput>..\..\out\dcu\$(PLATFORM)\$(CONFIG)</DCC_DcuOutput>
+        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <DCC_RangeChecking>true</DCC_RangeChecking>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -121,7 +123,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <Debugger_HostApplication>C:\Users\Rob\source\repos\workspace\bin\npp_8.3\notepad++.exe</Debugger_HostApplication>
+        <Debugger_HostApplication>C:\Users\Rob\source\repos\workspace\bin\npp_8.3.1\notepad++.exe</Debugger_HostApplication>
         <PostBuildEvent><![CDATA[]]></PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>

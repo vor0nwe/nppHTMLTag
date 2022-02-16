@@ -4,7 +4,7 @@ interface
   uses
     Classes, TypInfo,
     Windows, {$IFDEF DELPHI}ObjAuto, ObjComAuto,{$ENDIF}
-    NppPluginInterface, NppPluginConstants;
+    SciSupport, NppPluginInterface, NppPluginConstants;
 
   type
 
@@ -25,26 +25,26 @@ interface
     TTextRange = class
       protected
         FEditor:    TActiveDocument;
-        FStartPos:  integer;
-        FEndPos:    integer;
+        FStartPos:  Sci_Position;
+        FEndPos:    Sci_Position;
 
-        function  GetStart(): integer; virtual;
-        procedure SetStart(const AValue: integer); virtual;
-        function  GetEnd(): integer; virtual;
-        procedure SetEnd(const AValue: integer); virtual;
-        function  GetLength(): integer; virtual;
-        procedure SetLength(const AValue: integer); virtual;
+        function  GetStart(): Sci_Position; virtual;
+        procedure SetStart(const AValue: Sci_Position); virtual;
+        function  GetEnd(): Sci_Position; virtual;
+        procedure SetEnd(const AValue: Sci_Position); virtual;
+        function  GetLength(): Sci_Position; virtual;
+        procedure SetLength(const AValue: Sci_Position); virtual;
         function  GetText(): WideString; virtual;
         procedure SetText(const AValue: WideString); virtual;
-        function  GetFirstLine(): cardinal;
-        function  GetStartCol(): cardinal;
-        function  GetLastLine(): cardinal;
-        function  GetEndCol(): cardinal;
-        function  GetLineCount: cardinal;
+        function  GetFirstLine(): Sci_Position;
+        function  GetStartCol(): Sci_Position;
+        function  GetLastLine(): Sci_Position;
+        function  GetEndCol(): Sci_Position;
+        function  GetLineCount: Sci_Position;
         function  GetIndentLevel(): integer;
         procedure SetIndentLevel(const AValue: integer);
       public
-        constructor Create(const AEditor: TActiveDocument; const AStartPos, AEndPos: cardinal); overload;
+        constructor Create(const AEditor: TActiveDocument; const AStartPos, AEndPos: Sci_Position); overload;
         destructor  Destroy; override;
 
         procedure Select();
@@ -52,40 +52,40 @@ interface
         procedure Mark(const Style: integer; const Mask: integer = 0; const DurationInMs: cardinal = 0);
 
         property Document: TActiveDocument  read FEditor;
-        property StartPos: integer          read FStartPos        write SetStart;
-        property EndPos: integer            read FEndPos          write SetEnd;
-        property Length: integer            read GetLength        write SetLength;
+        property StartPos: Sci_Position     read FStartPos        write SetStart;
+        property EndPos: Sci_Position       read FEndPos          write SetEnd;
+        property Length: Sci_Position       read GetLength        write SetLength;
         property Text: WideString           read GetText          write SetText;
-        property FirstLine: cardinal        read GetFirstLine;
-        property FirstColumn: cardinal      read GetStartCol;
-        property LastLine: cardinal         read GetLastLine;
-        property LastColumn: cardinal       read GetEndCol;
-        property LineCount: cardinal        read GetLineCount;
+        property FirstLine: Sci_Position    read GetFirstLine;
+        property FirstColumn: Sci_Position  read GetStartCol;
+        property LastLine: Sci_Position     read GetLastLine;
+        property LastColumn: Sci_Position   read GetEndCol;
+        property LineCount: Sci_Position    read GetLineCount;
         property IndentationLevel: integer  read GetIndentLevel   write SetIndentLevel;
     end;
     { -------------------------------------------------------------------------------------------- }
     TSelection = class(TTextRange)
       protected
-        function  GetAnchor(): integer;
-        procedure SetAnchor(const AValue: integer);
-        function  GetCurrentPos(): integer;
-        procedure SetCurrentPos(const AValue: integer);
-        function  GetStart(): integer; override;
-        procedure SetStart(const AValue: integer); override;
-        function  GetEnd(): integer; override;
-        procedure SetEnd(const AValue: integer); override;
-        function  GetLength(): integer; override;
-        procedure SetLength(const AValue: integer); override;
+        function  GetAnchor(): Sci_Position;
+        procedure SetAnchor(const AValue: Sci_Position);
+        function  GetCurrentPos(): Sci_Position;
+        procedure SetCurrentPos(const AValue: Sci_Position);
+        function  GetStart(): Sci_Position; override;
+        procedure SetStart(const AValue: Sci_Position); override;
+        function  GetEnd(): Sci_Position; override;
+        procedure SetEnd(const AValue: Sci_Position); override;
+        function  GetLength(): Sci_Position; override;
+        procedure SetLength(const AValue: Sci_Position); override;
         function  GetText(): WideString; override;
         procedure SetText(const AValue: WideString); override;
       public
         constructor Create(const AEditor: TActiveDocument);
 
-        property Anchor: integer        read GetAnchor        write SetAnchor;
-        property Position: integer      read GetCurrentPos    write SetCurrentPos;
-        property StartPos: integer      read GetStart         write SetStart;
-        property EndPos: integer        read GetEnd           write SetEnd;
-        property Length: integer        read GetLength        write SetLength;
+        property Anchor: Sci_Position   read GetAnchor        write SetAnchor;
+        property Position: Sci_Position read GetCurrentPos    write SetCurrentPos;
+        property StartPos: Sci_Position read GetStart         write SetStart;
+        property EndPos: Sci_Position   read GetEnd           write SetEnd;
+        property Length: Sci_Position   read GetLength        write SetLength;
         property Text: WideString       read GetText          write SetText;
     end;
 {$IFDEF DELPHI}{$METHODINFO OFF}{$ENDIF}
@@ -93,8 +93,8 @@ interface
     TTextRangeMark = class
       private
         FWindowHandle: THandle;
-        FStartPos: integer;
-        FEndPos: integer;
+        FStartPos: Sci_Position;
+        FEndPos: Sci_Position;
         FTimerID: integer;
       public
         constructor Create(const ARange: TTextRange; const ADurationInMS: cardinal); overload;
@@ -133,34 +133,34 @@ interface
         procedure SetReadOnly(const AValue: boolean);
         function  GetText(): WideString;
         procedure SetText(const AValue: WideString);
-        function  GetLength(): cardinal;
-        function  GetLineCount(): cardinal;
+        function  GetLength(): Sci_Position;
+        function  GetLineCount(): Sci_Position;
         function  GetLangType(): LangType;
         procedure SetLangType(const AValue: LangType);
 
-        function  GetCurrentPos(): integer;
-        procedure SetCurrentPos(const AValue: integer);
+        function  GetCurrentPos(): Sci_Position;
+        procedure SetCurrentPos(const AValue: Sci_Position);
         function  GetSelection: TSelection;
-        function  GetFirstVisibleLine: integer;
-        function  GetLinesOnScreen: integer;
+        function  GetFirstVisibleLine: Sci_Position;
+        function  GetLinesOnScreen: Sci_Position;
       public
         destructor Destroy(); override;
 
         function  Activate(): TActiveDocument;
 
-        procedure Insert(const Text: WideString; const Position: cardinal = High(Cardinal));
+        procedure Insert(const Text: WideString; const Position: Sci_Position = Sci_Position(High(Cardinal)));
         procedure Append(const Text: WideString);
         procedure Clear;
 
-        function  GetRange(const StartPosition: Cardinal = 0; const LastPosition: Cardinal = High(Cardinal)): TTextRange;
-        function  GetLines(const FirstLine: cardinal; const Count: cardinal = 1): TTextRange;
+        function  GetRange(const StartPosition: Sci_Position = 0; const LastPosition: Sci_Position = Sci_Position(High(Cardinal))): TTextRange;
+        function  GetLines(const FirstLine: Sci_Position; const Count: Sci_Position = 1): TTextRange;
 
-        procedure Select(const Start: cardinal = 0; const Length: cardinal = High(Cardinal));
-        procedure SelectLines(const FirstLine: cardinal; const LineCount: cardinal = 1);
-        procedure SelectColumns(const FirstPosition, LastPosition: cardinal);
+        procedure Select(const Start: Sci_Position = 0; const Length: Sci_Position = Sci_Position(High(Cardinal)));
+        procedure SelectLines(const FirstLine: Sci_Position; const LineCount: Sci_Position = 1);
+        procedure SelectColumns(const FirstPosition, LastPosition: Sci_Position);
 
         function  Find(const AText: WideString; const AOptions: integer = 0;
-                        const AStartPos: integer = -1; const AEndPos: integer = -1): TTextRange; overload;
+                        const AStartPos: Sci_Position = -1; const AEndPos: Sci_Position = -1): TTextRange; overload;
         function  Find(const AText: WideString; const AOptions: integer;
                         const ATarget: TTextRange): TTextRange; overload;
 
@@ -169,14 +169,14 @@ interface
         property IsDirty: boolean     read GetModified  write SetModified;
         property IsReadOnly: boolean  read GetReadOnly  write SetReadOnly;
         property Text: WideString     read GetText      write SetText;
-        property Length: cardinal     read GetLength;
-        property LineCount: cardinal  read GetLineCount;
+        property Length: Sci_Position read GetLength;
+        property LineCount: Sci_Position read GetLineCount;
         property Language: LangType   read GetLangType  write SetLangType;
 
-        property CurrentPosition: integer     read GetCurrentPos  write SetCurrentPos;
+        property CurrentPosition:Sci_Position read GetCurrentPos  write SetCurrentPos;
         property Selection: TSelection        read GetSelection;
-        property TopLine: integer             read GetFirstVisibleLine;
-        property VisibleLineCount: integer    read GetLinesOnScreen;
+        property TopLine: Sci_Position        read GetFirstVisibleLine;
+        property VisibleLineCount: Sci_Position read GetLinesOnScreen;
     end;
 
     { -------------------------------------------------------------------------------------------- }
@@ -262,9 +262,8 @@ interface
 implementation
 
 uses
-  SysUtils,
+  SysUtils;
 //  L_DebugLogger,
-  SciSupport;
 
 var
   Application: TApplication;
@@ -303,11 +302,11 @@ end;
 { ================================================================================================ }
 { TTextRange }
 
-constructor TTextRange.Create(const AEditor: TActiveDocument; const AStartPos, AEndPos: cardinal);
+constructor TTextRange.Create(const AEditor: TActiveDocument; const AStartPos, AEndPos: Sci_Position);
 begin
   FEditor := AEditor;
-  SetStart(Integer(AStartPos));
-  SetEnd(Integer(AEndPos));
+  SetStart(AStartPos);
+  SetEnd(AEndPos);
 end;
 { ------------------------------------------------------------------------------------------------ }
 destructor TTextRange.Destroy;
@@ -318,49 +317,53 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetStart: integer;
+function TTextRange.GetStart: Sci_Position;
 begin
   Result := FStartPos;
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TTextRange.SetStart(const AValue: integer);
+procedure TTextRange.SetStart(const AValue: Sci_Position);
 begin
-  // TODO: check range
-  FStartPos := AValue;
+  if AValue <= INVALID_POSITION then
+    FStartPos := 0
+  else
+    FStartPos := AValue;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetEnd: integer;
+function TTextRange.GetEnd: Sci_Position;
 begin
-  if FEndPos = -1 then
+  if FEndPos <= INVALID_POSITION then
     Result := FEditor.SendMessage(SCI_GETLENGTH)
   else
     Result := FEndPos;
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TTextRange.SetEnd(const AValue: integer);
+procedure TTextRange.SetEnd(const AValue: Sci_Position);
 begin
-  // TODO: check range
-  FEndPos := AValue;
+  if AValue <= INVALID_POSITION then
+    FEndPos := FEditor.SendMessage(SCI_GETLENGTH)
+  else
+    FEndPos := AValue;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetLength: integer;
+function TTextRange.GetLength: Sci_Position;
 begin
   Result := Abs(FEndPos - FStartPos);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetLineCount: cardinal;
+function TTextRange.GetLineCount: Sci_Position;
 begin
   Result := GetLastLine - GetFirstLine + 1;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
-procedure TTextRange.SetLength(const AValue: integer);
+procedure TTextRange.SetLength(const AValue: Sci_Position);
 begin
   Self.EndPos := FStartPos + AValue;
 end;
@@ -396,14 +399,14 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetStartCol: cardinal;
+function TTextRange.GetStartCol: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_GETCOLUMN, FStartPos);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetFirstLine: cardinal;
+function TTextRange.GetFirstLine: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_LINEFROMPOSITION, FStartPos);
 end;
@@ -422,14 +425,14 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetEndCol: cardinal;
+function TTextRange.GetEndCol: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_GETCOLUMN, FEndPos);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TTextRange.GetLastLine: cardinal;
+function TTextRange.GetLastLine: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_LINEFROMPOSITION, FEndPos);
 end;
@@ -438,7 +441,7 @@ end;
 
 procedure TTextRange.Indent(const Levels: integer);
 var
-  i: Cardinal;
+  i: Sci_Position;
 begin
   for i := GetFirstLine to GetLastLine do begin
     FEditor.SendMessage(SCI_SETLINEINDENTATION, i, FEditor.SendMessage(SCI_GETLINEINDENTATION, i) + Cardinal(Levels));
@@ -449,10 +452,20 @@ end;
 
 procedure TTextRange.Mark(const Style, Mask: integer; const DurationInMs: cardinal);
 var
-  CurrentStyleEnd: integer;
+  CurrentStyleEnd: Sci_Position;
   StyleBits: integer;
 begin
   CurrentStyleEnd := FEditor.SendMessage(SCI_GETENDSTYLED);
+  {
+    Per https://www.scintilla.org/ScintillaDoc.html#SCI_GETSTYLEBITS:
+
+    "The following are features that should be removed from calling code but are
+    still defined to avoid breaking callers.
+
+    "Scintilla no longer supports style byte indicators. The last version to
+    support style byte indicators was 3.4.2. Any use of these symbols should be
+    removed and replaced with standard indicators <https://www.scintilla.org/ScintillaDoc.html#Indicators>"
+  }
   StyleBits := FEditor.SendMessage(SCI_GETSTYLEBITS);
   if Mask = 0 then begin
     FEditor.SendMessage(SCI_STARTSTYLING, FStartPos, StyleBits);
@@ -487,60 +500,60 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TSelection.GetAnchor: integer;
+function TSelection.GetAnchor: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_GETANCHOR);
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TSelection.SetAnchor(const AValue: integer);
+procedure TSelection.SetAnchor(const AValue: Sci_Position);
 begin
   FEditor.SendMessage(SCI_SETANCHOR, AValue);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TSelection.GetCurrentPos: integer;
+function TSelection.GetCurrentPos: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_GETCURRENTPOS);
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TSelection.SetCurrentPos(const AValue: integer);
+procedure TSelection.SetCurrentPos(const AValue: Sci_Position);
 begin
   FEditor.SendMessage(SCI_SETCURRENTPOS, AValue);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TSelection.GetEnd: integer;
+function TSelection.GetEnd: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_GETSELECTIONEND);
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TSelection.SetEnd(const AValue: integer);
+procedure TSelection.SetEnd(const AValue: Sci_Position);
 begin
   FEditor.SendMessage(SCI_SETSELECTIONEND, AValue);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TSelection.GetLength: integer;
+function TSelection.GetLength: Sci_Position;
 begin
   Result := Abs(GetEnd - GetStart);
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TSelection.SetLength(const AValue: integer);
+procedure TSelection.SetLength(const AValue: Sci_Position);
 begin
   FEditor.SendMessage(SCI_SETSELECTIONEND, GetStart + AValue);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TSelection.GetStart: integer;
+function TSelection.GetStart: Sci_Position;
 begin
   Result := FEditor.SendMessage(SCI_GETSELECTIONSTART);
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TSelection.SetStart(const AValue: integer);
+procedure TSelection.SetStart(const AValue: Sci_Position);
 begin
   FEditor.SendMessage(SCI_SETSELECTIONSTART, AValue);
 end;
@@ -560,7 +573,7 @@ end;
 procedure TSelection.SetText(const AValue: WideString);
 var
   Chars: AnsiString;
-  NewLength, EndPos: integer;
+  NewLength, EndPos: Sci_Position;
   Reversed: boolean;
 begin
   Chars := UTF8Encode(AValue);
@@ -1230,7 +1243,7 @@ begin
     Result := Find(AText, AOptions);
 end;
 { ------------------------------------------------------------------------------------------------ }
-function TActiveDocument.Find(const AText: WideString; const AOptions, AStartPos, AEndPos: integer): TTextRange;
+function TActiveDocument.Find(const AText: WideString; const AOptions: integer; const AStartPos, AEndPos: Sci_Position): TTextRange;
 var
   TTF: RSciTextToFind;
   StartPos: LRESULT;
@@ -1260,12 +1273,12 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetCurrentPos: integer;
+function TActiveDocument.GetCurrentPos: Sci_Position;
 begin
   Result := SendMessage(SCI_GETCURRENTPOS);
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TActiveDocument.SetCurrentPos(const AValue: integer);
+procedure TActiveDocument.SetCurrentPos(const AValue: Sci_Position);
 begin
   SendMessage(SCI_SETANCHOR, AValue);
   SendMessage(SCI_SETCURRENTPOS, AValue);
@@ -1273,14 +1286,14 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetFirstVisibleLine: integer;
+function TActiveDocument.GetFirstVisibleLine: Sci_Position;
 begin
   Result := SendMessage(SCI_GETFIRSTVISIBLELINE);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetLinesOnScreen: integer;
+function TActiveDocument.GetLinesOnScreen: Sci_Position;
 begin
   Result := SendMessage(SCI_LINESONSCREEN);
 end;
@@ -1309,7 +1322,7 @@ begin
   Result := FSelection;
 end;
 { ------------------------------------------------------------------------------------------------ }
-procedure TActiveDocument.Select(const Start, Length: cardinal);
+procedure TActiveDocument.Select(const Start, Length: Sci_Position);
 var
   SelMode: cardinal; // TODO: implement this as a property of the editor (or the selection object?)
 begin
@@ -1323,7 +1336,7 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-procedure TActiveDocument.SelectColumns(const FirstPosition, LastPosition: cardinal);
+procedure TActiveDocument.SelectColumns(const FirstPosition, LastPosition: Sci_Position);
 var
   SelMode: cardinal; // TODO: implement this as a property of the editor (or the selection object?)
 begin
@@ -1337,7 +1350,7 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-procedure TActiveDocument.SelectLines(const FirstLine, LineCount: cardinal);
+procedure TActiveDocument.SelectLines(const FirstLine, LineCount: Sci_Position);
 var
   SelMode: cardinal; // TODO: implement this as a property of the editor (or the selection object?)
 begin
@@ -1414,23 +1427,23 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetLength: cardinal;
+function TActiveDocument.GetLength: Sci_Position;
 begin
-  Result := SendMessage(SCI_GETLENGTH);  
+  Result := SendMessage(SCI_GETLENGTH);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetLineCount: cardinal;
+function TActiveDocument.GetLineCount: Sci_Position;
 begin
   Result := SendMessage(SCI_GETLINECOUNT);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetLines(const FirstLine: cardinal; const Count: cardinal): TTextRange;
+function TActiveDocument.GetLines(const FirstLine: Sci_Position; const Count: Sci_Position): TTextRange;
 var
-  LineCount: cardinal;
+  LineCount: Sci_Position;
 begin
   LineCount := GetLineCount;
   if FirstLine + Count > LineCount then begin
@@ -1463,7 +1476,7 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.GetRange(const StartPosition, LastPosition: cardinal): TTextRange;
+function TActiveDocument.GetRange(const StartPosition, LastPosition: Sci_Position): TTextRange;
 begin
   Result := TTextRange.Create(Self, StartPosition, LastPosition);
 end;
@@ -1478,17 +1491,31 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 
 function TActiveDocument.GetText: WideString;
+{
+  TODO: Add 1 to length when Npp's API advances to Scintilla 5.x.x
+
+  Per https://www.scintilla.org/ScintillaHistory.html § 5.1.5
+
+  "When calling SCI_GETTEXT, SCI_GETSELTEXT, and SCI_GETCURLINE with a NULL
+  buffer argument to discover the length that should be allocated, do not
+  include the terminating NUL in the returned value. The value returned is 1
+  less than previous versions of Scintilla. Applications should allocate a
+  buffer 1 more than this to accommodate the NUL. The wParam (length)
+  argument to SCI_GETTEXT and SCI_GETCURLINE also omits the NUL."
+}
 var
   Chars: AnsiString;
+  Len: Sci_PositionU;
 begin
-  SetLength(Chars, SendMessage(SCI_GETTEXT, High(Cardinal), nil));
-  SendMessage(SCI_GETTEXT, System.Length(Chars), PAnsiChar(Chars));
+  Len := SendMessage(SCI_GETTEXT, WPARAM(High(Sci_PositionU)) - 1, nil);
+  SetLength(Chars, Len);
+  SendMessage(SCI_GETTEXT, Len, PAnsiChar(Chars));
   Result := WideString(Chars);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-procedure TActiveDocument.Insert(const Text: WideString; const Position: cardinal);
+procedure TActiveDocument.Insert(const Text: WideString; const Position: Sci_Position);
 begin
   SendMessage(SCI_INSERTTEXT, Position, PAnsiChar(UTF8Encode(Text)));
 end;
@@ -1673,7 +1700,7 @@ end;
 destructor TTextRangeMark.Destroy;
 var
   Editor: TActiveDocument;
-  CurrentStyleEnd: integer;
+  CurrentStyleEnd: Sci_Position;
 begin
   Editor := TActiveDocument.Create(FWindowHandle);
   try

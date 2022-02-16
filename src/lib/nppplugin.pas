@@ -510,8 +510,8 @@ type
 
     // df
     function DoOpen(filename: String): boolean; overload;
-    function DoOpen(filename: String; Line: Integer): boolean; overload;
-    procedure GetFileLine(var filename: String; var Line: Integer);
+    function DoOpen(filename: String; Line: Sci_Position): boolean; overload;
+    procedure GetFileLine(var filename: String; var Line: Sci_Position);
     function GetWord: string;
 
     // helpers
@@ -605,10 +605,10 @@ begin
   Result := AddFuncItem('-', nil);
 end;
 
-procedure TNppPlugin.GetFileLine(var filename: String; var Line: Integer);
+procedure TNppPlugin.GetFileLine(var filename: String; var Line: Sci_Position);
 var
   s: String;
-  r: Integer;
+  r: Sci_Position;
 begin
   s := '';
   SetLength(s, 300);
@@ -616,8 +616,8 @@ begin
   SetLength(s, StrLen(PChar(s)));
   filename := s;
 
-  r := SendMessage(self.NppData.ScintillaMainHandle, SciSupport.SCI_GETCURRENTPOS, 0, 0);
-  Line := SendMessage(self.NppData.ScintillaMainHandle, SciSupport.SCI_LINEFROMPOSITION, r, 0);
+  r := SendMessage(self.NppData.ScintillaMainHandle, SCI_GETCURRENTPOS, 0, 0);
+  Line := SendMessage(self.NppData.ScintillaMainHandle, SCI_LINEFROMPOSITION, r, 0);
 end;
 
 function TNppPlugin.GetFuncsArray(var FuncsCount: Integer): Pointer;
@@ -731,13 +731,13 @@ begin
   Result := (r<>0);
 end;
 
-function TNppPlugin.DoOpen(filename: String; Line: Integer): boolean;
+function TNppPlugin.DoOpen(filename: String; Line: Sci_Position): boolean;
 var
   r: boolean;
 begin
   r := self.DoOpen(filename);
   if (r) then
-    SendMessage(self.NppData.ScintillaMainHandle, SciSupport.SCI_GOTOLINE, Line,0);
+    SendMessage(self.NppData.ScintillaMainHandle, SCI_GOTOLINE, Line,0);
   Result := r;
 end;
 

@@ -64,8 +64,8 @@ end {PerformConversion};
 { ------------------------------------------------------------------------------------------------ }
 function DoEncodeJS(var Text: WideString): Integer; overload;
 var
-  CharIndex: integer;
-  CharCode: SmallInt;
+  CharIndex: Cardinal;
+  CharCode: Cardinal;
   EntitiesReplaced: integer;
 begin
   EntitiesReplaced := 0;

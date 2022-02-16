@@ -121,6 +121,9 @@ interface
     //void NPPM_GETPLUGINSCONFIGDIR(int strLen, char *str)
 
   
+    NPPM_GETNPPVERSION = (NPPMSG + 50);
+    //int NPPM_GETNPPVERSION(0, 0)
+
     RUNCOMMAND_USER = (WM_USER + 3000);
   
       VAR_NOT_RECOGNIZED = 0;

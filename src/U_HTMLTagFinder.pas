@@ -28,7 +28,7 @@ const
 function ExtractTagName(AView: TActiveDocument;
                         out ATagName: string;
                         out AOpening, AClosing: boolean;
-                        APosition: integer = -1): TTextRange;
+                        APosition: Sci_Position = -1): TTextRange;
 var
   {Tag, }TagEnd: TTextRange;
   i: Integer;
@@ -172,7 +172,7 @@ var
   end;
   // ---------------------------------------------------------------------------------------------
 var
-  InitPos: integer;
+  InitPos: Sci_Position;
 begin
   npp := GetApplication();
   doc := npp.ActiveDocument;
@@ -333,9 +333,10 @@ begin
 //            DebugWrite('FindMatchingTag:Marking', Format('CurrentTag = TTextRange(%d, %d, "%s")', [Tag.StartPos, Tag.EndPos, Tag.Text]));
             MatchingTag.Select;
             {$IFNDEF NPPUNICODE} // NPP Unicode has always done this itself
-            // TODO: only if NPP has version < 5.0
-            Tag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
-            MatchingTag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
+            if HIWORD(npp.SendMessage(NPPM_GETNPPVERSION)) < 5 then begin
+              Tag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
+              MatchingTag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
+            end;
             {$ENDIF}
           end;
         end else begin
@@ -344,8 +345,8 @@ begin
           end else begin
             MatchingTag.Select;
             {$IFNDEF NPPUNICODE} // NPP Unicode has always done this itself
-            // TODO: only if NPP has version < 5.0
-            MatchingTag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
+            if HIWORD(npp.SendMessage(NPPM_GETNPPVERSION)) < 5 then
+              MatchingTag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
             {$ENDIF}
           end;
         end;
