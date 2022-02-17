@@ -35,6 +35,7 @@ var
   Line, Value, Entity: string;
   i, Separation, CodePoint: integer;
   Reading: boolean;
+  ErrMsg: string;
 begin
 //  DebugWrite('LoadEntities', Format('Set "%s"', [ASet]));
 
@@ -48,10 +49,15 @@ begin
     Result := TStringList(EntityLists.Objects[i]);
   end else begin
     IniFile := IncludeTrailingPathDelimiter(GetApplication.ConfigFolder) + 'HTMLTag-entities.ini';
+    ErrMsg := Format('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
       IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
+      ErrMsg := Concat(ErrMsg, Format(#13#10'or to'#13#10'%s', [ExtractFileDir(IniFile)]));
     if not FileExists(IniFile) then begin
-      raise Exception.CreateFmt('Unable to find entities file at "%s".', [IniFile]);
+      MessageBox(ANpp.WindowHandle, PChar(ErrMsg), PChar('Missing Entities File'), MB_ICONERROR);
+      FreeAndNil(EntityLists);
+      Result := nil;
+      Exit;
     end else begin
       Result := TStringList.Create;
       Result.NameValueSeparator := '=';
@@ -164,6 +170,10 @@ var
   EntitiesReplaced: integer;
 begin
   EntitiesReplaced := 0;
+  if not Assigned(Entities) then begin
+    Result := EntitiesReplaced;
+    Exit;
+  end;
 
   for CharIndex := Length(Text) downto 1 do begin
     EntityIndex := Entities.IndexOfObject(TObject(integer(Ord(Text[CharIndex]))));
@@ -217,6 +227,9 @@ begin
   end else begin
     Entities := LoadEntities(npp);
   end;
+
+  if not Assigned(Entities) then
+    Exit;
 
   Text := doc.Selection.Text;
 
