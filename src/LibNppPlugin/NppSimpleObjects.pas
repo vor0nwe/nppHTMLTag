@@ -4,7 +4,7 @@ interface
   uses
     Classes, TypInfo,
     Windows, {$IFDEF DELPHI}ObjAuto, ObjComAuto,{$ENDIF}
-    SciSupport, NppPluginInterface, NppPluginConstants;
+    SciSupport, NppPluginInterface, NppPlugin;
 
   type
 
@@ -1675,8 +1675,6 @@ begin
 //  CommInfo.internalMsg := Message;
 //  CommInfo.srcModuleName := PNppChar(DllName);
 //  CommInfo.info := Info;
-{$MESSAGE HINT 'TODO: define NPPM_MSGTOPLUGIN and TNppCommunicationInfo (in NppPluginInterface and NppPluginConstants)'}
-//  // TODO: define NPPM_MSGTOPLUGIN and TNppCommunicationInfo (in NppPluginInterface and NppPluginConstants)
 //  if not SendMessage(NPPM_MSGTOPLUGIN, PNppChar(PluginFilename), @CommInfo) then begin
 //    raise Exception.CreateFmt('Plugin "%s" not found!', [PluginFilename]);
 //  end;

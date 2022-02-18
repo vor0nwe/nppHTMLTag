@@ -16,7 +16,7 @@ implementation
 uses
   SysUtils, Windows,
 //  L_DebugLogger,
-  NppPluginConstants, SciSupport;
+  SciSupport;
 
 { ------------------------------------------------------------------------------------------------ }
 type

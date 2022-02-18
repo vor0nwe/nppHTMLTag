@@ -21,11 +21,9 @@ uses
   L_SpecialFolders in '..\common\L_SpecialFolders.pas',
   RegExpr in '..\common\RegExpr.pas',
   NppSimpleObjects in '..\LibNppPlugin\NppSimpleObjects.pas',
-  NppPluginConstants in '..\LibNppPlugin\NppPluginConstants.pas',
   NppPluginInterface in '..\LibNppPlugin\NppPluginInterface.pas',
   nppplugin in '..\lib\nppplugin.pas',
-  SciSupport in '..\lib\SciSupport.pas',
-  U_TagMatcher in '..\U_TagMatcher.pas';
+  SciSupport in '..\lib\SciSupport.pas';
 
 {$R *.res}
 

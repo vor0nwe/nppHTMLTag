@@ -22,45 +22,46 @@ unit nppplugin;
 interface
 
 uses
-  Windows,Messages,SciSupport,SysUtils,
-  Classes{$IFDEF NPPFORMS},Forms,Dialogs{$ENDIF};
+  Windows,Messages,SciSupport,SysUtils;
+
+{$MINENUMSIZE 4}
 
 const
   FuncItemNameLen=64;
   MaxFuncs = 11;
 
   { Most of this defs are outdated... But there is no consistant N++ doc... }
-  NOTEPADPLUS_USER = (WM_USER + 1000);
-  NPPM_GETCURRENTSCINTILLA = (NOTEPADPLUS_USER + 4);
-  NPPM_GETCURRENTLANGTYPE = (NOTEPADPLUS_USER + 5);
-  NPPM_SETCURRENTLANGTYPE = (NOTEPADPLUS_USER + 6);
-  NPPM_GETNBOPENFILES = (NOTEPADPLUS_USER + 7);
+  NPPMSG = (WM_USER + 1000);
+  NPPM_GETCURRENTSCINTILLA = (NPPMSG + 4);          // lParam indicates the current Scintilla view : 0 is the main Scintilla view; 1 is the second Scintilla view.
+  NPPM_GETCURRENTLANGTYPE = (NPPMSG + 5);           // lParam indicates the language type of current Scintilla view document: please see the enum LangType for all possible values.
+  NPPM_SETCURRENTLANGTYPE = (NPPMSG + 6);           // lParam is used to set the language type of current Scintilla view document (see above)
+  NPPM_GETNBOPENFILES = (NPPMSG + 7);               // returns the number of files; depending on lParam: ALL_OPEN_FILES; PRIMARY_VIEW or SECONDARY_VIEW
     ALL_OPEN_FILES = 0;
     PRIMARY_VIEW = 1;
-    SECOND_VIEW	= 2;
-  NPPM_GETOPENFILENAMES = (NOTEPADPLUS_USER + 8);
-  WM_CANCEL_SCINTILLAKEY = (NOTEPADPLUS_USER + 9);
-  WM_BIND_SCINTILLAKEY = (NOTEPADPLUS_USER + 10);
-  WM_SCINTILLAKEY_MODIFIED = (NOTEPADPLUS_USER + 11);
-  NPPM_MODELESSDIALOG = (NOTEPADPLUS_USER + 12);
+    SECOND_VIEW = 2;
+  NPPM_GETOPENFILENAMES = (NPPMSG + 8);
+  WM_CANCEL_SCINTILLAKEY = (NPPMSG + 9);
+  WM_BIND_SCINTILLAKEY = (NPPMSG + 10);
+  WM_SCINTILLAKEY_MODIFIED = (NPPMSG + 11);
+  NPPM_MODELESSDIALOG = (NPPMSG + 12);
     MODELESSDIALOGADD = 0;
     MODELESSDIALOGREMOVE = 1;
 
-  NPPM_GETNBSESSIONFILES = (NOTEPADPLUS_USER + 13);
-  NPPM_GETSESSIONFILES = (NOTEPADPLUS_USER + 14);
-  NPPM_SAVESESSION = (NOTEPADPLUS_USER + 15);
-  NPPM_SAVECURRENTSESSION  =(NOTEPADPLUS_USER + 16);  // see TSessionInfo
-  NPPM_GETOPENFILENAMESPRIMARY = (NOTEPADPLUS_USER + 17);
-  NPPM_GETOPENFILENAMESSECOND = (NOTEPADPLUS_USER + 18);
-  WM_GETPARENTOF = (NOTEPADPLUS_USER + 19);
-  NPPM_CREATESCINTILLAHANDLE = (NOTEPADPLUS_USER + 20);
-  NPPM_DESTROYSCINTILLAHANDLE = (NOTEPADPLUS_USER + 21);
-  NPPM_GETNBUSERLANG = (NOTEPADPLUS_USER + 22);
-  NPPM_GETCURRENTDOCINDEX = (NOTEPADPLUS_USER + 23);
+  NPPM_GETNBSESSIONFILES = (NPPMSG + 13);
+  NPPM_GETSESSIONFILES = (NPPMSG + 14);
+  NPPM_SAVESESSION = (NPPMSG + 15);
+  NPPM_SAVECURRENTSESSION  =(NPPMSG + 16);  // see TSessionInfo
+  NPPM_GETOPENFILENAMESPRIMARY = (NPPMSG + 17);
+  NPPM_GETOPENFILENAMESSECOND = (NPPMSG + 18);
+  WM_GETPARENTOF = (NPPMSG + 19);
+  NPPM_CREATESCINTILLAHANDLE = (NPPMSG + 20);
+  NPPM_DESTROYSCINTILLAHANDLE = (NPPMSG + 21);
+  NPPM_GETNBUSERLANG = (NPPMSG + 22);
+  NPPM_GETCURRENTDOCINDEX = (NPPMSG + 23);
     MAIN_VIEW = 0;
     SUB_VIEW = 1;
 
-  NPPM_SETSTATUSBAR = (NOTEPADPLUS_USER + 24);
+  NPPM_SETSTATUSBAR = (NPPMSG + 24);
     STATUSBAR_DOC_TYPE = 0;
     STATUSBAR_DOC_SIZE = 1;
     STATUSBAR_CUR_POS = 2;
@@ -68,64 +69,64 @@ const
     STATUSBAR_UNICODE_TYPE = 4;
     STATUSBAR_TYPING_MODE = 5;
 
-  NPPM_GETMENUHANDLE = (NOTEPADPLUS_USER + 25);
+  NPPM_GETMENUHANDLE = (NPPMSG + 25);
     NPPPLUGINMENU = 0;
 
-  NPPM_ENCODESCI = (NOTEPADPLUS_USER + 26);
+  NPPM_ENCODESCI = (NPPMSG + 26);
   //ascii file to unicode
   //int WM_ENCODE_SCI(MAIN_VIEW/SUB_VIEW, 0)
   //return new unicodeMode
 
-  NPPM_DECODESCI = (NOTEPADPLUS_USER + 27);
+  NPPM_DECODESCI = (NPPMSG + 27);
   //unicode file to ascii
   //int WM_DECODE_SCI(MAIN_VIEW/SUB_VIEW, 0)
   //return old unicodeMode
 
-  NPPM_ACTIVATEDOC = (NOTEPADPLUS_USER + 28);
+  NPPM_ACTIVATEDOC = (NPPMSG + 28);
   //void WM_ACTIVATE_DOC(int index2Activate, int view)
 
-  NPPM_LAUNCHFINDINFILESDLG = (NOTEPADPLUS_USER + 29);
+  NPPM_LAUNCHFINDINFILESDLG = (NPPMSG + 29);
   //void WM_LAUNCH_FINDINFILESDLG(char * dir2Search, char * filtre)
 
-  NPPM_DMMSHOW = (NOTEPADPLUS_USER + 30);
-  NPPM_DMMHIDE	= (NOTEPADPLUS_USER + 31);
-  NPPM_DMMUPDATEDISPINFO = (NOTEPADPLUS_USER + 32);
+  NPPM_DMMSHOW = (NPPMSG + 30);
+  NPPM_DMMHIDE	= (NPPMSG + 31);
+  NPPM_DMMUPDATEDISPINFO = (NPPMSG + 32);
   //void WM_DMM_xxx(0, tTbData->hClient)
 
-  NPPM_DMMREGASDCKDLG = (NOTEPADPLUS_USER + 33);
+  NPPM_DMMREGASDCKDLG = (NPPMSG + 33);
   //void WM_DMM_REGASDCKDLG(0, &tTbData)
 
-  NPPM_LOADSESSION = (NOTEPADPLUS_USER + 34);
+  NPPM_LOADSESSION = (NPPMSG + 34);
   //void WM_LOADSESSION(0, const char* file name)
-  NPPM_DMMVIEWOTHERTAB = (NOTEPADPLUS_USER + 35);
+  NPPM_DMMVIEWOTHERTAB = (NPPMSG + 35);
   //void WM_DMM_VIEWOTHERTAB(0, tTbData->hClient)
-  NPPM_RELOADFILE = (NOTEPADPLUS_USER + 36);
+  NPPM_RELOADFILE = (NPPMSG + 36);
   //BOOL WM_RELOADFILE(BOOL withAlert, char *filePathName2Reload)
-  NPPM_SWITCHTOFILE = (NOTEPADPLUS_USER + 37);
+  NPPM_SWITCHTOFILE = (NPPMSG + 37);
   //BOOL WM_SWITCHTOFILE(0, char *filePathName2switch)
-  NPPM_SAVECURRENTFILE = (NOTEPADPLUS_USER + 38);
+  NPPM_SAVECURRENTFILE = (NPPMSG + 38);
   //BOOL WM_SWITCHTOFILE(0, 0)
-  NPPM_SAVEALLFILES	= (NOTEPADPLUS_USER + 39);
+  NPPM_SAVEALLFILES	= (NPPMSG + 39);
   //BOOL WM_SAVEALLFILES(0, 0)
-  NPPM_SETMENUITEMCHECK	= (NOTEPADPLUS_USER + 40);
+  NPPM_SETMENUITEMCHECK	= (NPPMSG + 40);
   //void WM_PIMENU_CHECK(UINT	funcItem[X]._cmdID, TRUE/FALSE)
-  NPPM_ADDTOOLBARICON = (NOTEPADPLUS_USER + 41); // see TToolbarIcons
+  NPPM_ADDTOOLBARICON = (NPPMSG + 41); // see TToolbarIcons
   //void WM_ADDTOOLBARICON(UINT funcItem[X]._cmdID, toolbarIcons icon)
-  NPPM_GETWINDOWSVERSION = (NOTEPADPLUS_USER + 42);
+  NPPM_GETWINDOWSVERSION = (NPPMSG + 42);
   //winVer WM_GETWINDOWSVERSION(0, 0)
-  NPPM_DMMGETPLUGINHWNDBYNAME = (NOTEPADPLUS_USER + 43);
+  NPPM_DMMGETPLUGINHWNDBYNAME = (NPPMSG + 43);
   //HWND WM_DMM_GETPLUGINHWNDBYNAME(const char *windowName, const char *moduleName)
   // if moduleName is NULL, then return value is NULL
   // if windowName is NULL, then the first found window handle which matches with the moduleName will be returned
-  NPPM_MAKECURRENTBUFFERDIRTY = (NOTEPADPLUS_USER + 44);
+  NPPM_MAKECURRENTBUFFERDIRTY = (NPPMSG + 44);
   //BOOL NPPM_MAKECURRENTBUFFERDIRTY(0, 0)
-  NPPM_GETENABLETHEMETEXTUREFUNC = (NOTEPADPLUS_USER + 45);
+  NPPM_GETENABLETHEMETEXTUREFUNC = (NPPMSG + 45);
   //BOOL NPPM_GETENABLETHEMETEXTUREFUNC(0, 0)
-  NPPM_GETPLUGINSCONFIGDIR = (NOTEPADPLUS_USER + 46);
+  NPPM_GETPLUGINSCONFIGDIR = (NPPMSG + 46);
   //void NPPM_GETPLUGINSCONFIGDIR(int strLen, char *str)
 
   // new
-  NPPM_MSGTOPLUGIN = (NOTEPADPLUS_USER + 47); // see TCommunicationInfo
+  NPPM_MSGTOPLUGIN = (NPPMSG + 47); // see TCommunicationInfo
 	//BOOL NPPM_MSGTOPLUGIN(TCHAR *destModuleName, CommunicationInfo *info)
 	// return value is TRUE when the message arrive to the destination plugins.
 	// if destModule or info is NULL, then return value is FALSE
@@ -135,48 +136,48 @@ const
 //			void * info; // defined by plugin
 //		};
 
-	NPPM_MENUCOMMAND = (NOTEPADPLUS_USER + 48);
+	NPPM_MENUCOMMAND = (NPPMSG + 48);
 	//void NPPM_MENUCOMMAND(0, int cmdID)
 	// uncomment //#include "menuCmdID.h"
 	// in the beginning of this file then use the command symbols defined in "menuCmdID.h" file
 	// to access all the Notepad++ menu command items
 
-	NPPM_TRIGGERTABBARCONTEXTMENU = (NOTEPADPLUS_USER + 49);
+	NPPM_TRIGGERTABBARCONTEXTMENU = (NPPMSG + 49);
 	//void NPPM_TRIGGERTABBARCONTEXTMENU(int view, int index2Activate)
 
-	NPPM_GETNPPVERSION = (NOTEPADPLUS_USER + 50);
+	NPPM_GETNPPVERSION = (NPPMSG + 50);
 	// int NPPM_GETNPPVERSION(0, 0)
 	// return version
 	// ex : v4.6
 	// HIWORD(version) == 4
 	// LOWORD(version) == 6
 
-	NPPM_HIDETABBAR = (NOTEPADPLUS_USER + 51);
+	NPPM_HIDETABBAR = (NPPMSG + 51);
 	// BOOL NPPM_HIDETABBAR(0, BOOL hideOrNot)
 	// if hideOrNot is set as TRUE then tab bar will be hidden
 	// otherwise it'll be shown.
 	// return value : the old status value
 
-	NPPM_ISTABBARHIDE = (NOTEPADPLUS_USER + 52);
+	NPPM_ISTABBARHIDE = (NPPMSG + 52);
 	// BOOL NPPM_ISTABBARHIDE(0, 0)
 	// returned value : TRUE if tab bar is hidden, otherwise FALSE
 
-	NPPM_CHECKDOCSTATUS = (NOTEPADPLUS_USER + 53);
+	NPPM_CHECKDOCSTATUS = (NPPMSG + 53);
 	// VOID NPPM_CHECKDOCSTATUS(BOOL, 0)
 
-	NPPM_ENABLECHECKDOCOPT = (NOTEPADPLUS_USER + 54);
+	NPPM_ENABLECHECKDOCOPT = (NPPMSG + 54);
 	// VOID NPPM_ENABLECHECKDOCOPT(OPT, 0)
 		// where OPT is :
 		CHECKDOCOPT_NONE = 0;
 		CHECKDOCOPT_UPDATESILENTLY = 1;
 		CHECKDOCOPT_UPDATEGO2END = 2;
 
-	NPPM_GETCHECKDOCOPT = (NOTEPADPLUS_USER + 55);
+	NPPM_GETCHECKDOCOPT = (NPPMSG + 55);
 	// INT NPPM_GETCHECKDOCOPT(0, 0)
-	NPPM_SETCHECKDOCOPT = (NOTEPADPLUS_USER + 56);
+	NPPM_SETCHECKDOCOPT = (NPPMSG + 56);
 	// INT NPPM_SETCHECKDOCOPT(OPT, 0)
 
-	NPPM_GETPOSFROMBUFFERID = (NOTEPADPLUS_USER + 57);
+	NPPM_GETPOSFROMBUFFERID = (NPPMSG + 57);
 	// INT NPPM_GETPOSFROMBUFFERID(INT bufferID, 0)
 	// Return VIEW|INDEX from a buffer ID. -1 if the bufferID non existing
 	//
@@ -185,73 +186,73 @@ const
 	//  MAIN_VIEW 0
 	//  SUB_VIEW  1
 
-	NPPM_GETFULLPATHFROMBUFFERID = (NOTEPADPLUS_USER + 58);
+	NPPM_GETFULLPATHFROMBUFFERID = (NPPMSG + 58);
 	// INT NPPM_GETFULLPATHFROMBUFFERID(INT bufferID, CHAR *fullFilePath)
 	// Get full path file name from a bufferID.
 	// Return -1 if the bufferID non existing, otherwise the number of TCHAR copied/to copy
 	// User should call it with fullFilePath be NULL to get the number of TCHAR (not including the nul character),
 	// allocate fullFilePath with the return values + 1, then call it again to get  full path file name
 
-	NPPM_GETBUFFERIDFROMPOS = (NOTEPADPLUS_USER + 59);
+	NPPM_GETBUFFERIDFROMPOS = (NPPMSG + 59);
 	//wParam: Position of document
 	//lParam: View to use, 0 = Main, 1 = Secondary
 	//Returns 0 if invalid
 
-	NPPM_GETCURRENTBUFFERID = (NOTEPADPLUS_USER + 60);
+	NPPM_GETCURRENTBUFFERID = (NPPMSG + 60);
 	//Returns active Buffer
 
-	NPPM_RELOADBUFFERID = (NOTEPADPLUS_USER + 61);
+	NPPM_RELOADBUFFERID = (NPPMSG + 61);
 	//Reloads Buffer
 	//wParam: Buffer to reload
 	//lParam: 0 if no alert, else alert
 
-	NPPM_SETFILENAME = (NOTEPADPLUS_USER + 63);
+	NPPM_SETFILENAME = (NPPMSG + 63);
 	//wParam: BufferID to rename
 	//lParam: name to set (TCHAR*)
 	//Buffer must have been previously unnamed (eg "new 1" document types)
 
-	NPPM_GETBUFFERLANGTYPE = (NOTEPADPLUS_USER + 64);
+	NPPM_GETBUFFERLANGTYPE = (NPPMSG + 64);
 	//wParam: BufferID to get LangType from
 	//lParam: 0
 	//Returns as int, see LangType. -1 on error
 
-	NPPM_SETBUFFERLANGTYPE = (NOTEPADPLUS_USER + 65);
+	NPPM_SETBUFFERLANGTYPE = (NPPMSG + 65);
 	//wParam: BufferID to set LangType of
 	//lParam: LangType
 	//Returns TRUE on success, FALSE otherwise
 	//use int, see LangType for possible values
 	//L_USER and L_EXTERNAL are not supported
 
-	NPPM_GETBUFFERENCODING = (NOTEPADPLUS_USER + 66);
+	NPPM_GETBUFFERENCODING = (NPPMSG + 66);
 	//wParam: BufferID to get encoding from
 	//lParam: 0
 	//returns as int, see UniMode. -1 on error
 
-	NPPM_SETBUFFERENCODING = (NOTEPADPLUS_USER + 67);
+	NPPM_SETBUFFERENCODING = (NPPMSG + 67);
 	//wParam: BufferID to set encoding of
 	//lParam: format
 	//Returns TRUE on success, FALSE otherwise
 	//use int, see UniMode
 	//Can only be done on new, unedited files
 
-	NPPM_GETBUFFERFORMAT = (NOTEPADPLUS_USER + 68);
+	NPPM_GETBUFFERFORMAT = (NPPMSG + 68);
 	//wParam: BufferID to get format from
 	//lParam: 0
 	//returns as int, see formatType. -1 on error
 
-	NPPM_SETBUFFERFORMAT = (NOTEPADPLUS_USER + 69);
+	NPPM_SETBUFFERFORMAT = (NPPMSG + 69);
 	//wParam: BufferID to set format of
 	//lParam: format
 	//Returns TRUE on success, FALSE otherwise
 	//use int, see formatType
 
-	NPPM_DOOPEN = (NOTEPADPLUS_USER + 77);
+	NPPM_DOOPEN = (NPPMSG + 77);
 	// BOOL NPPM_DOOPEN(0, const TCHAR *fullPathName2Open)
 	// fullPathName2Open indicates the full file path name to be opened.
 	// The return value is TRUE (1) if the operation is successful, otherwise FALSE (0).
 
   // http://sourceforge.net/p/notepad-plus/discussion/482781/thread/c430f474
-  NPPM_GETLANGUAGENAME = (NOTEPADPLUS_USER + 83);
+  NPPM_GETLANGUAGENAME = (NPPMSG + 83);
    // INT NPPM_GETLANGUAGENAME(int langType, TCHAR *langName)
    // Get programing language name from the given language type (LangType)
    // Return value is the number of copied character / number of character to copy (\0 is not included)
@@ -259,7 +260,7 @@ const
        // You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGENAME function the 2nd time
    // by passing allocated buffer as argument langName
 
-  NPPM_GETLANGUAGEDESC = (NOTEPADPLUS_USER + 84);
+  NPPM_GETLANGUAGEDESC = (NPPMSG + 84);
    // INT NPPM_GETLANGUAGEDESC(int langType, TCHAR *langDesc)
    // Get programing language short description from the given language type (LangType)
    // Return value is the number of copied character / number of character to copy (\0 is not included)
@@ -408,19 +409,21 @@ type
   nppPChar = PAnsiChar;
 {$ENDIF}
 
-  TNppLang = (L_TXT = 0, L_PHP , L_C, L_CPP, L_CS, L_OBJC, L_JAVA, L_RC,
-              L_HTML, L_XML, L_MAKEFILE, L_PASCAL, L_BATCH, L_INI, L_NFO, L_USER,
-              L_ASP, L_SQL, L_VB, L_JS, L_CSS, L_PERL, L_PYTHON, L_LUA,
-              L_TEX, L_FORTRAN, L_BASH, L_FLASH, L_NSIS, L_TCL, L_LISP, L_SCHEME,
-              L_ASM, L_DIFF, L_PROPS, L_PS, L_RUBY, L_SMALLTALK, L_VHDL, L_KIX, L_AU3,
-              L_CAML, L_ADA, L_VERILOG, L_MATLAB, L_HASKELL, L_INNO,
-              // The end of enumated language type, so it should be always at the end
-              L_END);
+  LangType = (L_TXT = 0, L_PHP , L_C, L_CPP, L_CS, L_OBJC, L_JAVA, L_RC,
+    L_HTML, L_XML, L_MAKEFILE, L_PASCAL, L_BATCH, L_INI, L_NFO, L_USER,
+    L_ASP, L_SQL, L_VB, L_JS, L_CSS, L_PERL, L_PYTHON, L_LUA,
+    L_TEX, L_FORTRAN, L_BASH, L_FLASH, L_NSIS, L_TCL, L_LISP, L_SCHEME,
+    L_ASM, L_DIFF, L_PROPS, L_PS, L_RUBY, L_SMALLTALK, L_VHDL, L_KIX, L_AU3,
+    L_CAML, L_ADA, L_VERILOG, L_MATLAB, L_HASKELL, L_INNO, L_SEARCHRESULT, L_CMAKE,
+    L_YAML, L_COBOL, L_GUI4CLI, L_D, L_POWERSHELL, L_R, L_JSP,
+    // The end of enumated language type, so it should be always at the end
+    L_END
+  );
 
   TSessionInfo = record
-    SessionFilePathName: nppPChar;
+    SessionFilePathName: nppString;
     NumFiles: Integer;
-    Files: array of nppPChar;
+    Files: array of nppString;
   end;
 
   TToolbarIcons = record
@@ -434,13 +437,14 @@ type
     info: Pointer;
   end;
 
-  TNppData = record
-    NppHandle: HWND;
-    ScintillaMainHandle: HWND;
-    ScintillaSecondHandle: HWND;
+  TNppData = packed record
+    nppHandle: HWND;
+    nppScintillaMainHandle: HWND;
+    nppScintillaSecondHandle: HWND;
   end;
+  PNPPData = ^TNppData;
 
-  TShortcutKey = record
+  TShortcutKey = packed record
     IsCtrl: Boolean;
     IsAlt: Boolean;
     IsShift: Boolean;
@@ -450,13 +454,14 @@ type
 
   PFUNCPLUGINCMD = procedure; cdecl;
 
-  _TFuncItem = record
+  _TFuncItem = packed record
     ItemName: Array[0..FuncItemNameLen-1] of nppChar;
     Func: PFUNCPLUGINCMD;
     CmdID: Integer;
-    Checked: Boolean;
+    Checked: LongBool;
     ShortcutKey: PShortcutKey;
   end;
+  PFuncItem = ^_TFuncItem;
 
   TToolbarData = record
     ClientHandle: HWND;
@@ -616,8 +621,8 @@ begin
   SetLength(s, StrLen(PChar(s)));
   filename := s;
 
-  r := SendMessage(self.NppData.ScintillaMainHandle, SCI_GETCURRENTPOS, 0, 0);
-  Line := SendMessage(self.NppData.ScintillaMainHandle, SCI_LINEFROMPOSITION, r, 0);
+  r := SendMessage(self.NppData.nppScintillaMainHandle, SCI_GETCURRENTPOS, 0, 0);
+  Line := SendMessage(self.NppData.nppScintillaSecondHandle, SCI_LINEFROMPOSITION, r, 0);
 end;
 
 function TNppPlugin.GetFuncsArray(var FuncsCount: Integer): Pointer;
@@ -737,7 +742,7 @@ var
 begin
   r := self.DoOpen(filename);
   if (r) then
-    SendMessage(self.NppData.ScintillaMainHandle, SCI_GOTOLINE, Line,0);
+    SendMessage(self.NppData.nppScintillaMainHandle, SCI_GOTOLINE, Line,0);
   Result := r;
 end;
 

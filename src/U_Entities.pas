@@ -20,7 +20,7 @@ implementation
 uses
   SysUtils, Windows, StrUtils,
 //  L_DebugLogger,
-  NppPluginConstants, SciSupport,
+  NppPlugin, SciSupport,
   L_SpecialFolders;
 
 var
@@ -344,4 +344,3 @@ finalization
   end;
 
 end.
-
