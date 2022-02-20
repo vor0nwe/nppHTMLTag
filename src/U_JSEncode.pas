@@ -119,7 +119,6 @@ begin
       if Assigned(Match) then begin
         // Adjust the target already
         Target.StartPos := Match.StartPos + 1;
-        Target.EndPos := Target.EndPos - Length(Match.Text) + 2;
 
         // replace this match's text by the appropriate Unicode character
         Match.Text := Char(StrToInt('$' + Copy(Match.Text, 3, 4)));
