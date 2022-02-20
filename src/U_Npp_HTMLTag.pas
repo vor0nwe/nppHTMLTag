@@ -6,14 +6,18 @@ interface
 uses
   SysUtils, Windows,
   NppPlugin, SciSupport,
-  NppSimpleObjects;
+  NppSimpleObjects, L_VersionInfoW;
 
 type
   TNppPluginHTMLTag = class(TNppPlugin)
   private
     FApp: TApplication;
+    FVersionInfo: TFileVersionInfo;
+    FVersionStr: nppString;
+    function SupportsBigFiles: Boolean;
   public
     constructor Create;
+    destructor Destroy; override;
     procedure commandFindMatchingTag;
     procedure commandSelectTagContents;
     procedure commandSelectTagContentsOnly;
@@ -46,9 +50,9 @@ var
 implementation
 
 uses
-  DateUtils,
+  Strutils,
   ShellAPI,
-  L_VersionInfoW, L_SpecialFolders,
+  L_SpecialFolders,
   U_HTMLTagFinder, U_Entities, U_JSEncode;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -152,13 +156,51 @@ begin
   self.AddFuncSeparator;
 
   self.AddFuncItem('&About...', _commandAbout);
+
+  try
+     FVersionInfo := TFileVersionInfo.Create(TSpecialFolders.DLLFullName);
+     FVersionStr := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), '');
+     FVersionStr :=
+      Concat(FVersionStr,
+        Format(' %d.%d.%d (%s bit)',
+          [FVersionInfo.MajorVersion, FVersionInfo.MinorVersion, FVersionInfo.Revision,
+          {$IFDEF CPUX64}'64'{$ELSE}'32'{$ENDIF}]));
+  except
+    FreeAndNil(FVersionInfo);
+  end;
+
+{$IFNDEF CPUX64}
+  FVersionStr := ReplaceStr(FVersionStr, '_unicode', '');
+{$ENDIF}
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+destructor TNppPluginHTMLTag.Destroy;
+begin
+  if Assigned(FVersionInfo) then
+    FreeAndNil(FVersionInfo);
+  inherited;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.DoNppnToolbarModification;
+var
+  Msg: string;
 begin
   inherited;
   FApp := GetApplication(@Self.NppData);
+
+{$IFDEF CPUX64}
+  try
+    if not SupportsBigFiles then begin
+      Msg := 'The installed version of HTML Tag requires Notepad++ 8.3 or newer.'#13#10
+             + 'Running any plugin command will crash the application!';
+      MessageBox(App.WindowHandle, PChar(Msg), PChar(FVersionStr), MB_ICONWARNING);
+    end;
+  except
+    HandleException(ExceptObject, ExceptAddr);
+  end;
+{$ENDIF}
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -253,39 +295,49 @@ end {TNppPluginHTMLTag.commandDecodeJS};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandAbout;
 var
-  Version: TFileVersionInfo;
   Text, DLLName: string;
 begin
   try
     DLLName := TSpecialFolders.DLLFullName;
-    Version := TFileVersionInfo.Create(DLLName);
-    try
-      Text := Format('%s v%s %s'#10#10
+    if not Assigned(FVersionInfo) then begin
+      FVersionInfo := TFileVersionInfo.Create(DLLName);
+    end;
+
+    Text := Format('%s'#10#10
                       + 'Plug-in location: %s'#10
                       + 'Config location: %s'#10
                       + 'Bugs: %s'#10
                       + 'Download: %s'#10#10
                       + #$00A9' 2011-2020 %s - %s'#10
                       + '  a.k.a. %s - %s (v0.1 - v1.1)'#10
-                      + #$00A9' 2022 Robert Di Pardo (v1.2 -)'#10#10
+                      + #$00A9' 2022 Robert Di Pardo (since v1.2)'#10#10
                       + 'Licensed under the %s - %s',
-                     [ExtractFileName(DLLName), Version.FileVersion,
-                      {$IFDEF WIN64}'(64-bits)'{$ELSE}'(32-bits)'{$ENDIF},
-                      ExtractFilePath(DLLName),
+                     [FVersionStr,
+                      ExtractFileDir(DLLName),
                       App.ConfigFolder,
-                      Version.Comments,
+                      FVersionInfo.Comments,
                       'https://bitbucket.org/rdipardo/htmltag/downloads',
-                      Version.LegalCopyright, 'http://fossil.2of4.net/npp_htmltag', // 'http://martijn.coppoolse.com/software',
+                      FVersionInfo.LegalCopyright, 'http://fossil.2of4.net/npp_htmltag', // 'http://martijn.coppoolse.com/software',
                       'vor0nwe', 'http://sourceforge.net/users/vor0nwe',
                       'MPL 1.1', 'http://www.mozilla.org/MPL/1.1']);
-      MessageBox(App.WindowHandle, PChar(Text), PChar(Version.FileDescription), MB_ICONINFORMATION)
-    finally
-      FreeAndNil(Version);
-    end;
+    MessageBox(App.WindowHandle, PChar(Text), PChar(FVersionInfo.FileDescription), MB_ICONINFORMATION)
   except
     HandleException(ExceptObject, ExceptAddr);
   end;
 end {TNppPluginHTMLTag.commandAbout};
+
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.SupportsBigFiles: Boolean;
+var
+  NppVerison: Cardinal;
+begin
+  NppVerison := FApp.SendMessage(NPPM_GETNPPVERSION);
+  Result :=
+    (HIWORD(NppVerison) > 8) or
+    ((HIWORD(NppVerison) = 8) and
+      // 8.3 -> 8,3 (*not* 8,30)
+      ((LOWORD(NppVerison) = 3) or (LOWORD(NppVerison) > 21)));
+end {TNppPluginHTMLTag.SupportsBigFiles};
 
 
 

@@ -22,6 +22,17 @@ It originated in these requests on the Plugin Development forum on SourceForge.n
 
 h2. Installation
 
+===============================================================================================
+
+h3. _Warning_
+
+_*Always* check your Notepad++ version at "? > Debug Info" before installing plugins_
+_Notepad++ 8.3 is the *minimum required* version for 64-bit releases of HTML Tag 1.2 and newer_
+
+You can safely use any 32-bit version of HTML Tag with any 32-bit version of Notepad++
+
+===============================================================================================
+
 As usual:
 Extract the DLL and accompanying files to the plugins folder under
 @%ProgramFiles%\Notepad++@ (or wherever you're running Notepad++ from) or @%AppData%\Notepad++@, and (re)start Np++.
@@ -57,8 +68,8 @@ _Up to version 1.1.0, plugin release bundles include all of the following:_
 h2. History
 
 * 1.1.0 - 2017-09-04 20:15
-** Added: option to encode line break entities as well [689eef6cee]
-** Fixed: decoding a JS escape reduced the selection by one each time [e717ed1de5]
+** Added: option to encode line break entities as well "[689eef6cee]":689eef6cee
+** Fixed: decoding a JS escape reduced the selection by one each time "[e717ed1de5]":e717ed1de5
 * 1.0.0 - 2017-02-19 16:03
 ** Added: 64-bit version
 ** Several tiny bugfixes
@@ -92,12 +103,18 @@ h2. History
 
 h3. To do
 
-* [Request#1848503] Add a command to close the open tag at the current location
+* "[Request#1848503]":1848503 Add a command to close the open tag at the current location
 * Add command to encode entities in the contents only (only apply encoding when not inside tags;
   leave valid tags and entities alone)
 * Add command to select tags only (and leave the contents out of the selection)
 * Make it play nice(r) with PHP & ASP tags (either highlight those separately or ignore them)
 * Add option to encode entities 'as-you-type'
 * Add option to close tags 'as-you-type' (type '</' and the rest will be inserted automagically)
-* [Request#2147949] drop down a list of tags after '<'
-* [Request#2147949] drop down a list of attributes on space after a tag
+* "[Request#2147949]":2147949 drop down a list of tags after '<'
+* "[Request#2147949]":2147949 drop down a list of attributes on space after a tag
+
+
+[689eef6cee]https://fossil.2of4.net/npp_htmltag/info/689eef6cee
+[e717ed1de5]https://fossil.2of4.net/npp_htmltag/info/e717ed1de5
+[1848503]https://fossil.2of4.net/npp_htmltag/tktview?name=a3fc2e7864
+[2147949]https://fossil.2of4.net/npp_htmltag/tktview?name=43695affda
