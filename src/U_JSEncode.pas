@@ -14,7 +14,7 @@ function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
 uses
-  SysUtils, Windows,
+  SysUtils,
 //  L_DebugLogger,
   SciSupport;
 

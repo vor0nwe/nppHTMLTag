@@ -2,7 +2,7 @@ unit NppPluginInterface;
 
 interface
   uses
-    Windows, SciSupport, nppplugin;
+    Windows, nppplugin;
 
   type
     TFuncGetName = function(): nppPChar; cdecl;

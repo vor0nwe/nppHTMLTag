@@ -5,7 +5,7 @@ interface
 
 uses
   SysUtils, Windows,
-  NppPlugin, SciSupport,
+  NppPlugin,
   NppSimpleObjects, L_VersionInfoW;
 
 type

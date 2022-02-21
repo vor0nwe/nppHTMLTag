@@ -10,14 +10,13 @@ interface
 implementation
 
 uses
-  SysUtils, Windows, Classes, Character,
+  SysUtils, Windows, Classes,
   SciSupport, nppplugin;
 
 type
   TDirectionEnum = (dirBackward = -1, dirNone = 0, dirForward = 1, dirUnknown = 2);
 
 const
-  scPTitle: PChar = '(X|HT)MLTag Plugin';
   ncHighlightTimeout = 1000;
   scSelfClosingTags: array[0..12] of string = ('AREA', 'BASE', 'BASEFONT', 'BR', 'COL', 'FRAME',
                                                 'HR', 'IMG', 'INPUT', 'ISINDEX', 'LINK', 'META',
@@ -36,7 +35,7 @@ var
   EndIndex: integer;
   {InnerLevel: integer;}
   ClosureFound: boolean;
-  ExtraChar: char;
+  ExtraChar: AnsiChar;
 begin
   ATagName := '';
 
@@ -260,7 +259,7 @@ begin
                   Break;
                 end;
                 NextTag.StartPos := NextTag.StartPos - 1;
-                if NextTag.Text[1].IsInArray(['%', '?']) then begin
+                if CharInSet(NextTag.Text[1], ['%', '?']) then begin
                   InitPos := NextTag.StartPos;
                   Continue;
                 end else begin

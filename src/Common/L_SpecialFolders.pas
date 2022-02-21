@@ -3,7 +3,7 @@ unit L_SpecialFolders;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 interface
 {$REGION 'PVCS-header'}
-(* © DGMR raadgevende ingenieurs BV
+(* Â© DGMR raadgevende ingenieurs BV
  *
  * Created by: MCO on 31-01-2012
  *

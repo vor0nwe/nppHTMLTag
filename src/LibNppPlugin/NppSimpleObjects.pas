@@ -2,9 +2,7 @@ unit NppSimpleObjects;
 
 interface
   uses
-    Classes, TypInfo,
-    Windows, {$IFDEF DELPHI}ObjAuto, ObjComAuto,{$ENDIF}
-    SciSupport, NppPluginInterface, NppPlugin;
+    Classes, Windows, SciSupport, NppPlugin;
 
   type
 
