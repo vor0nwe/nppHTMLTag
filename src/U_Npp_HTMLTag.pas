@@ -194,7 +194,7 @@ begin
   try
     if not SupportsBigFiles then begin
       Msg := 'The installed version of HTML Tag requires Notepad++ 8.3 or newer.'#13#10
-             + 'Running any plugin command will crash the application!';
+             + 'Plugin commands have been disabled.';
       MessageBox(App.WindowHandle, PChar(Msg), PChar(FVersionStr), MB_ICONWARNING);
     end;
   except
@@ -222,6 +222,10 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandFindMatchingTag;
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     U_HTMLTagFinder.FindMatchingTag(False, False);
   except
@@ -232,6 +236,10 @@ end {TNppPluginHTMLTag.commandFindMatchingTag};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandSelectTagContents;
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     U_HTMLTagFinder.FindMatchingTag(True, False);
   except
@@ -242,6 +250,10 @@ end {TNppPluginHTMLTag.commandSelectTagContents};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandSelectTagContentsOnly;
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     U_HTMLTagFinder.FindMatchingTag(True, True);
   except
@@ -252,6 +264,10 @@ end {TNppPluginHTMLTag.commandSelectTagContentsOnly};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandEncodeEntities(const InclLineBreaks: Boolean = False);
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     if InclLineBreaks then
       U_Entities.EncodeEntities(U_Entities.TEntityReplacementScope.ersSelection, [eroEncodeLineBreaks])
@@ -265,6 +281,10 @@ end {TNppPluginHTMLTag.commandEncodeEntities};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandDecodeEntities;
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     U_Entities.DecodeEntities();
   except
@@ -275,6 +295,10 @@ end {TNppPluginHTMLTag.commandDecodeEntities};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandEncodeJS;
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     U_JSEncode.EncodeJS();
   except
@@ -285,6 +309,10 @@ end {TNppPluginHTMLTag.commandEncodeJS};
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandDecodeJS;
 begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
   try
     U_JSEncode.DecodeJS();
   except
