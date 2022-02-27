@@ -129,7 +129,9 @@ begin
   sk.Key := 'T'; // Ctrl-Shift-T
   self.AddFuncItem('&Select tag and contents', _commandSelectTagContents, sk);
 
-  self.AddFuncItem('Select tag &contents only', _commandSelectTagContentsOnly);
+  sk.IsShift := False; sk.IsCtrl := True; sk.IsAlt := True;
+  sk.Key := 'T'; // Ctrl-Alt-T
+  self.AddFuncItem('Select tag &contents only', _commandSelectTagContentsOnly, sk);
 
   self.AddFuncSeparator;
 
@@ -137,7 +139,9 @@ begin
   sk.Key := 'E'; // Ctrl-E
   self.AddFuncItem('&Encode entities', _commandEncodeEntities, sk);
 
-  self.AddFuncItem('&Encode entities (incl. line breaks)', _commandEncodeEntitiesInclLineBreaks, False);
+  sk.IsShift := False; sk.IsCtrl := True; sk.IsAlt := True;
+  sk.Key := 'E'; // Ctrl-Alt-E
+  self.AddFuncItem('Encode entities (incl. line &breaks)', _commandEncodeEntitiesInclLineBreaks, sk);
 
   sk.IsShift := True; sk.IsCtrl := true; sk.IsAlt := False;
   sk.Key := 'E'; // Ctrl-Shift-E
@@ -145,12 +149,12 @@ begin
 
   self.AddFuncSeparator;
 
-  sk.IsShift := False; sk.IsCtrl := true; sk.IsAlt := False;
-  sk.Key := 'J'; // Ctrl-J
+  sk.IsShift := False; sk.IsCtrl := False; sk.IsAlt := True;
+  sk.Key := 'J'; // Alt-J
   self.AddFuncItem('Encode &JS', _commandEncodeJS, sk);
 
-  sk.IsShift := True; sk.IsCtrl := true; sk.IsAlt := False;
-  sk.Key := 'J'; // Ctrl-Shift-J
+  sk.IsShift := True; sk.IsCtrl := False; sk.IsAlt := True;
+  sk.Key := 'J'; // Alt-Shift-J
   self.AddFuncItem('Dec&ode JS', _commandDecodeJS, sk);
 
   self.AddFuncSeparator;
