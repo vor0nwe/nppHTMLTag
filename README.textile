@@ -41,11 +41,13 @@ Extract the DLL and accompanying files to the plugins folder under
 h2. Usage
 
 | Ctrl+T | to select the matching tag |
-| Shift+Ctrl+T | to select both tags and the entire contents in between |
+| Ctrl+Shift+T | to select both tags and the entire contents in between |
+| Ctrl+Alt+T | to select only the contents between tags |
 | Ctrl+E | to encode all selected non-ASCII characters to their HTML entities |
-| Shift+Ctrl+E | to dEcode all selected HTML entities |
-| Ctrl+J | to encode all selected non-ASCII character to their Javascript entities |
-| Shift+Ctrl+J | to dEcode all selected JS entities |
+| Ctrl+Alt+E | same as Ctrl+E, but encodes line breaks as well |
+| Ctrl+Shift+E | to dEcode all selected HTML entities |
+| Alt+J | to encode all selected non-ASCII character to their Javascript entities |
+| Alt+Shift+J | to dEcode all selected JS entities |
 
 All commands are available under the Plugins menu item 'HTML Tag'; the shortcut keys can be adjusted
 with the shortcut mapper.

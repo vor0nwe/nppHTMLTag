@@ -1,11 +1,21 @@
 h2. Changes since v1.1
 
+* 1.2.1 (2022-02-27)
+** Fixed: the JavaScript decoder no longer skips codes at line ends when processing multi-line sequences [82f9b0e]
+** Changed: disable plugin functions when loaded into N++ versions older than 8.3 [9862bfd]
+** Changed: refactor all Scintilla API procedures to accommodate massive files of >2GiB (N++ 8.3 feature) [ad2e69c]
+** Changed: show which directories were searched when HTML entities file can't be found [2dd338c]
+** Changed: change the default key mappings of the JS (de/en)code functions to avoid collisions with N++'s builtin line operations [92dce18]
+** Added: update the README with minimum N++ version requirement [1ff61a7]
+** Added: new default mappings for encoding line breaks and tag content selection [92dce18]
+
 * 1.2.0 (2022-02-05)
 ** Fixed: made it safe for x64 binaries to call into the @SCI_GETTEXTRANGE@ API without causing access violations in Notepad++ 8.3. Go "here":cref for a brief summary of the "breaking change":db330832 this addresses
-** Fixed: the JS entity decode feature can once again translate Unicode escapes without crashing the editor, as was reported "here":jsDecodeBug
+** Fixed: the JS entity decode feature can once again translate Unicode escapes without crashing the editor, as was reported "here":jsDecodeBug and "here":jsDecodeBugOrig
 ** Changed: moved development to a "new repository":https://bitbucket.org/rdipardo/htmltag
 
 
 [db330832]https://github.com/notepad-plus-plus/notepad-plus-plus/commit/db3308329bd23a073b7de6f4ded2a523b282fcc3#diff-8968b5cad4cc8f62c9204894eea9941dac353af428a26be64f52055e99992040
 [cref]https://community.notepad-plus-plus.org/topic/22471/recompile-your-x64-plugins-with-new-header
 [jsDecodeBug]https://community.notepad-plus-plus.org/topic/18488/htmltag-1-1-plugin-broken-since-npp-7-7
+[jsDecodeBugOrig]https://fossil.2of4.net/npp_htmltag/tktview?name=c3c733e21f

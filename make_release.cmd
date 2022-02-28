@@ -8,7 +8,7 @@
 ::
 SETLOCAL
 
-set "VERSION=120"
+set "VERSION=121"
 set "PLUGIN=HTMLTag"
 set "PLUGIN_LEGACY_DLL=out\Win32\Release\%PLUGIN%_unicode.dll"
 set "SLUG_SRC=out\%PLUGIN%_v%VERSION%"
@@ -18,7 +18,6 @@ set "SLUGX64=%SLUGX64_SRC%.zip"
 
 del /S /Q /F out\*.zip
 
-xcopy /DIY *.textile "out\Doc"
 xcopy /DIY *.textile "out\Doc"
 
 :: https://fossil.2of4.net/npp_htmltag/doc/trunk/doc/HTMLTag-readme.txt
