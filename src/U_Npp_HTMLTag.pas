@@ -360,15 +360,28 @@ end {TNppPluginHTMLTag.commandAbout};
 
 { ------------------------------------------------------------------------------------------------ }
 function TNppPluginHTMLTag.SupportsBigFiles: Boolean;
+const
+  PatchReleases: Array[0..2] of Word = ( 191, 192, 193 );
 var
-  NppVerison: Cardinal;
+  NppVersion: Cardinal;
+  IsPatchRelease: Boolean;
+  i: Byte;
 begin
-  NppVerison := FApp.SendMessage(NPPM_GETNPPVERSION);
+  NppVersion := FApp.SendMessage(NPPM_GETNPPVERSION);
+  IsPatchRelease := False;
+
+  for i := 0 to Length(PatchReleases) - 1 do
+  begin
+    IsPatchRelease := (LOWORD(NppVersion) = PatchReleases[i]);
+    if IsPatchRelease then Break;
+  end;
+
   Result :=
-    (HIWORD(NppVerison) > 8) or
-    ((HIWORD(NppVerison) = 8) and
+    (HIWORD(NppVersion) > 8) or
+    ((HIWORD(NppVersion) = 8) and
       // 8.3 -> 8,3 (*not* 8,30)
-      ((LOWORD(NppVerison) = 3) or (LOWORD(NppVerison) > 21)));
+      ((LOWORD(NppVersion) = 3) or
+       ((LOWORD(NppVersion) > 21) and not IsPatchRelease)))
 end {TNppPluginHTMLTag.SupportsBigFiles};
 
 

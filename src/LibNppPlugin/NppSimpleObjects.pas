@@ -260,6 +260,7 @@ interface
 implementation
 
 uses
+  {$IFDEF SCI_5}Math,{$ENDIF}
   SysUtils;
 //  L_DebugLogger,
 
@@ -1490,8 +1491,6 @@ end;
 
 function TActiveDocument.GetText: WideString;
 {
-  TODO: Add 1 to length when Npp's API advances to Scintilla 5.x.x
-
   Per https://www.scintilla.org/ScintillaHistory.html § 5.1.5
 
   "When calling SCI_GETTEXT, SCI_GETSELTEXT, and SCI_GETCURLINE with a NULL
@@ -1506,6 +1505,9 @@ var
   Len: Sci_PositionU;
 begin
   Len := SendMessage(SCI_GETTEXT, WPARAM(High(Sci_PositionU)) - 1, nil);
+{$IFDEF SCI_5}
+  Len := Round(MinValue([Len + 1, SendMessage(SCI_GETLENGTH)]));
+{$ENDIF}
   SetLength(Chars, Len);
   SendMessage(SCI_GETTEXT, Len, PAnsiChar(Chars));
   Result := WideString(Chars);
