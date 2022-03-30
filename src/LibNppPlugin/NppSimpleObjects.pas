@@ -565,7 +565,7 @@ var
 begin
   Chars := AnsiString(StringOfChar(#0, Self.GetLength + 1));
   FEditor.SendMessage(SCI_GETSELTEXT, 0, PAnsiChar(Chars));
-  Result := WideString(Chars);
+  Result := WideString(UTF8Decode(Chars));
 //  DebugWrite('TSelection.GetText', Result);
 end;
 { ------------------------------------------------------------------------------------------------ }
