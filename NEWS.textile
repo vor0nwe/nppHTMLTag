@@ -1,5 +1,10 @@
 h2. Changes since v1.1
 
+* 1.2.2 (2022-03-31)
+** Fixed: always treat selected text as UTF-8 when encoding entities (#1) [d2189a1]
+** Fixed: disable plugin functions for N++ versions 8.1.9.1, 8.1.9.2 and 8.1.9.3 [4a496ff]
+** Changed: when targeting Scintilla 5, add 1 to the length returned by @SCI_GETTEXT@ [4a496ff]
+
 * 1.2.1 (2022-02-27)
 ** Fixed: the JavaScript decoder no longer skips codes at line ends when processing multi-line sequences [82f9b0e]
 ** Changed: disable plugin functions when loaded into N++ versions older than 8.3 [9862bfd]
