@@ -1,5 +1,8 @@
 h2. Changes since v1.1
 
+* 1.2.3 (2022-04-14)
+** Fixed: don't fail the compatibility check when Notepad++ moves to a "short" version like 8.4 (#2) [ea0118f]
+
 * 1.2.2 (2022-03-31)
 ** Fixed: always treat selected text as UTF-8 when encoding entities (#1) [d2189a1]
 ** Fixed: disable plugin functions for N++ versions 8.1.9.1, 8.1.9.2 and 8.1.9.3 [4a496ff]
