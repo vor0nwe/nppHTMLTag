@@ -74,7 +74,7 @@ begin
     CharCode := Ord(Text[CharIndex]);
     if CharCode > 127 then begin
       Text := Copy(Text, 1, CharIndex - 1)
-              + '\u' + IntToHex(CharCode, 4)
+              + WideFormat('\u%s', [IntToHex(CharCode, 4)])
               + Copy(Text, CharIndex + 1);
       Inc(EntitiesReplaced);
     end;
@@ -113,21 +113,23 @@ begin
   doc := npp.ActiveDocument;
 
   Target := TTextRange.Create(doc, doc.Selection.StartPos, doc.Selection.EndPos);
+  Match := TTextRange.Create(doc);
   try
     repeat
-      Match := doc.Find('\\u[0-9A-F][0-9A-F][0-9A-F][0-9A-F]', SCFIND_REGEXP, Target);
-      if Assigned(Match) then begin
+      doc.Find('\\u[0-9A-F][0-9A-F][0-9A-F][0-9A-F]', Match, SCFIND_REGEXP, Target.StartPos, Target.EndPos);
+      if Match.Length <> 0 then begin
         // Adjust the target already
         Target.StartPos := Match.StartPos + 1;
 
         // replace this match's text by the appropriate Unicode character
-        Match.Text := Char(StrToInt('$' + Copy(Match.Text, 3, 4)));
+        Match.Text := WideChar(StrToInt(Format('$%s', [Copy(Match.Text, 3, 4)])));
 
         Inc(Result);
       end;
-    until not Assigned(Match);
+    until Match.Length = 0;
   finally
     Target.Free;
+    Match.Free;
   end;
 //DebugWrite('DecodeJS', Format('Result: %d replacements', [Result]));
 end{DecodeJS};

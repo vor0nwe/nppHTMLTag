@@ -42,7 +42,7 @@ interface
         function  GetIndentLevel(): integer;
         procedure SetIndentLevel(const AValue: integer);
       public
-        constructor Create(const AEditor: TActiveDocument; const AStartPos, AEndPos: Sci_Position); overload;
+        constructor Create(const AEditor: TActiveDocument; const AStartPos: Sci_Position = 0; AEndPos: Sci_Position = 0); overload;
         destructor  Destroy; override;
 
         procedure Select();
@@ -157,10 +157,9 @@ interface
         procedure SelectLines(const FirstLine: Sci_Position; const LineCount: Sci_Position = 1);
         procedure SelectColumns(const FirstPosition, LastPosition: Sci_Position);
 
-        function  Find(const AText: WideString; const AOptions: integer = 0;
-                        const AStartPos: Sci_Position = -1; const AEndPos: Sci_Position = -1): TTextRange; overload;
-        function  Find(const AText: WideString; const AOptions: integer;
-                        const ATarget: TTextRange): TTextRange; overload;
+        procedure Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer = 0;
+                        const AStartPos: Sci_Position = -1; const AEndPos: Sci_Position = -1); overload;
+        procedure Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer); overload;
 
         property Name: WideString     read GetName;
         property Path: WideString     read GetPath;
@@ -215,14 +214,12 @@ interface
 
         function  GetCount(): cardinal;
         function  GetItem(const AIndex: cardinal): TActiveDocument; overload;
-        function  GetItem(const AName: WideString): TActiveDocument; overload;
       public
         function Open(const Path: WideString): TActiveDocument;
 
         property Count: cardinal                                read GetCount;
 
         property Item[const Index: cardinal]: TActiveDocument   read GetItem; default;
-        property Item[const Name: WideString]: TActiveDocument  read GetItem; {$IFNDEF FPC}default;{$ENDIF}
     end;
 
     { -------------------------------------------------------------------------------------------- }
@@ -262,7 +259,6 @@ implementation
 uses
   {$IFDEF SCI_5}Math,{$ENDIF}
   SysUtils;
-//  L_DebugLogger,
 
 var
   Application: TApplication;
@@ -285,7 +281,6 @@ var
   i: integer;
   trm: TTextRangeMark;
 begin
-//  DebugWrite('NppSimpleObjects.TextRangeUnmarkTimer', 'EventID: ' + IntToStr(AEventID));
   KillTimer(0, AEventID);
   if Assigned(TimedTextRangeMarks) then begin
     for i := 0 to TimedTextRangeMarks.Count - 1 do begin
@@ -301,7 +296,7 @@ end;
 { ================================================================================================ }
 { TTextRange }
 
-constructor TTextRange.Create(const AEditor: TActiveDocument; const AStartPos, AEndPos: Sci_Position);
+constructor TTextRange.Create(const AEditor: TActiveDocument; const AStartPos: Sci_Position = 0; AEndPos: Sci_Position = 0);
 begin
   FEditor := AEditor;
   SetStart(AStartPos);
@@ -389,7 +384,6 @@ var
 begin
   Chars := UTF8Encode(AValue);
   TxtRng := System.Length(Chars);
-//DebugWrite('TTextRange.SetText', Chars);
   FEditor.SendMessage(SCI_SETTARGETSTART, FStartPos);
   FEditor.SendMessage(SCI_SETTARGETEND, FEndPos);
   Dec(FEndPos, (FEndPos - FStartPos) - Integer(FEditor.SendMessage(SCI_REPLACETARGET, TxtRng, PAnsiChar(Chars))));
@@ -566,7 +560,6 @@ begin
   Chars := AnsiString(StringOfChar(#0, Self.GetLength + 1));
   FEditor.SendMessage(SCI_GETSELTEXT, 0, PAnsiChar(Chars));
   Result := WideString(UTF8Decode(Chars));
-//  DebugWrite('TSelection.GetText', Result);
 end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TSelection.SetText(const AValue: WideString);
@@ -576,7 +569,6 @@ var
   Reversed: boolean;
 begin
   Chars := UTF8Encode(AValue);
-//DebugWrite('TSelection.SetText', Chars);
   NewLength := System.Length(Chars) - 1;
   Reversed := (Self.Anchor > Self.GetCurrentPos);
   FEditor.SendMessage(SCI_REPLACESEL, 0, PAnsiChar(Chars));
@@ -1137,18 +1129,14 @@ var
   MsgConst: string;
 begin
   MsgConst := GetMsgConstString(Message, FIsNpp);
-//  DebugWrite('SendMessage', Format('hWnd: %d; Message: %d%s; wParam: %d; lParam: %d', [FWindowHandle, Message, MsgConst, wParam, lParam]));
   try
     if SendMessageTimeout(FWindowHandle, Message, wParam, lParam, SMTO_NORMAL, 5000, @Result) = 0 then
       RaiseLastOSError;
-//    DebugWrite('SendMessage', Format('hWnd: %d; Result: %d', [FWindowHandle, Result]));
   except
     on E: EOSError do begin
-//      DebugWrite('SendMessage', Format('hWnd: %d; Error %d: %s', [FWindowHandle, E.ErrorCode, E.Message]));
       raise;
     end;
     on E: Exception do begin
-//      DebugWrite('SendMessage', Format('hWnd: %d; Error[%s]: %s', [FWindowHandle, E.ClassName, E.Message]));
       raise;
     end;
   end;
@@ -1159,18 +1147,14 @@ var
   MsgConst: string;
 begin
   MsgConst := GetMsgConstString(Message, FIsNpp);
-//  DebugWrite('SendMessage', Format('hWnd: %d; Message: %d%s; wParam: %d; lParam: 0x%p', [FWindowHandle, Message, MsgConst, wParam, lParam]));
   try
     if SendMessageTimeout(FWindowHandle, Message, wParam, Windows.LPARAM(lParam), SMTO_NORMAL, 5000, @Result) = 0 then
       RaiseLastOSError;
-//    DebugWrite('SendMessage', Format('hWnd: %d; Result: %d', [FWindowHandle, Result]));
   except
     on E: EOSError do begin
-//      DebugWrite('SendMessage', Format('hWnd: %d; Error %d: %s', [FWindowHandle, E.ErrorCode, E.Message]));
       raise;
     end;
     on E: Exception do begin
-//      DebugWrite('SendMessage', Format('hWnd: %d; Error[%s]: %s', [FWindowHandle, E.ClassName, E.Message]));
       raise;
     end;
   end;
@@ -1182,18 +1166,14 @@ var
   MsgConst: string;
 begin
   MsgConst := GetMsgConstString(Message, FIsNpp);
-//  DebugWrite('PostMessage', Format('hWnd: %d; Message: %d%s; wParam: %d; lParam: %d', [FWindowHandle, Message, MsgConst, wParam, lParam]));
   try
     if Windows.PostMessage(FWindowHandle, Message, wParam, Windows.LPARAM(lParam)) = False then
       RaiseLastOSError;
-//    DebugWrite('PostMessage', Format('hWnd: %d', [FWindowHandle]));
   except
     on E: EOSError do begin
-//      DebugWrite('PostMessage', Format('hWnd: %d; Error %d: %s', [FWindowHandle, E.ErrorCode, E.Message]));
       raise;
     end;
     on E: Exception do begin
-//      DebugWrite('PostMessage', Format('hWnd: %d; Error[%s]: %s', [FWindowHandle, E.ClassName, E.Message]));
       raise;
     end;
   end;
@@ -1204,18 +1184,14 @@ var
   MsgConst: string;
 begin
   MsgConst := GetMsgConstString(Message, FIsNpp);
-//  DebugWrite('PostMessage', Format('hWnd: %d; Message: %d%s; wParam: %d; lParam: 0x%p', [FWindowHandle, Message, MsgConst, wParam, lParam]));
   try
     if Windows.PostMessage(FWindowHandle, Message, wParam, Windows.LPARAM(lParam)) = False then
       RaiseLastOSError;
-//    DebugWrite('PostMessage', Format('hWnd: %d', [FWindowHandle]));
   except
     on E: EOSError do begin
-//      DebugWrite('PostMessage', Format('hWnd: %d; Error %d: %s', [FWindowHandle, E.ErrorCode, E.Message]));
       raise;
     end;
     on E: Exception do begin
-//      DebugWrite('PostMessage', Format('hWnd: %d; Error[%s]: %s', [FWindowHandle, E.ClassName, E.Message]));
       raise;
     end;
   end;
@@ -1234,15 +1210,18 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TActiveDocument.Find(const AText: WideString; const AOptions: integer; const ATarget: TTextRange): TTextRange;
+procedure TActiveDocument.Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer);
 begin
-  if Assigned(ATarget) then
-    Result := Find(AText, AOptions, ATarget.StartPos, ATarget.EndPos)
-  else
-    Result := Find(AText, AOptions);
+  if Assigned(ATarget) then 
+  begin
+    if AOptions <> 0 then
+      Find(AText, ATarget, AOptions, ATarget.StartPos, ATarget.EndPos)
+    else
+      Find(AText, ATarget);
+  end;
 end;
 { ------------------------------------------------------------------------------------------------ }
-function TActiveDocument.Find(const AText: WideString; const AOptions: integer; const AStartPos, AEndPos: Sci_Position): TTextRange;
+procedure TActiveDocument.Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer; const AStartPos, AEndPos: Sci_Position);
 var
   TTF: RSciTextToFind;
   StartPos: LRESULT;
@@ -1260,13 +1239,11 @@ begin
   TTF.chrgText := TTF.chrg;
   StartPos := SendMessage(SCI_FINDTEXT, AOptions, @TTF);
   if StartPos = -1 then begin
-    Result := nil;
-//    DebugWrite(Format('Find("%s"; %d; %d; %d)', [AText, AOptions, AStartPos, AEndPos]),
-//               'No match found');
+    ATarget.SetStart(0);
+    ATarget.SetEnd(0);    
   end else begin
-    Result := TTextRange.Create(Self, TTF.chrgText.cpMin, TTF.chrgText.cpMax);
-//    DebugWrite(Format('Find("%s"; %d; %d; %d)', [AText, AOptions, AStartPos, AEndPos]),
-//               Format('Found match in range %d-%d', [TTF.chrgText.cpMin, TTF.chrgText.cpMax]));
+    ATarget.SetStart(TTF.chrgText.cpMin);
+    ATarget.SetEnd(TTF.chrgText.cpMax);        
   end;
 end;
 
@@ -1588,14 +1565,6 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TDocuments.GetItem(const AName: WideString): TActiveDocument;
-begin
-{$MESSAGE HINT 'TODO: shouldn''t this return a TDocument?'}
-  Result := nil;
-end;
-
-{ ------------------------------------------------------------------------------------------------ }
-
 function TDocuments.Open(const Path: WideString): TActiveDocument;
 begin
 {$MESSAGE HINT 'TODO: open the document'}
@@ -1640,10 +1609,8 @@ function TApplication.GetDocument: TActiveDocument;
 var
   Index: Cardinal;
 begin
-//  DebugWrite('TApplication.GetDocument');
   Self.SendMessage(NPPM_GETCURRENTSCINTILLA, 0, @Index);
   Result := FEditors.Item[Index];
-//  DebugWrite('TApplication.GetDocument', Format('Handle: %d', [Result.FWindowHandle]));
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -1651,7 +1618,7 @@ end;
 function TApplication.GetPath: WideString;
 begin
 {$MESSAGE HINT 'TODO: use GetModuleFileNameEx'}
-  Result := ParamStr(0); // TODO: make long path?
+  Result := UTF8Decode(ParamStr(0)); // TODO: make long path?
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -1711,7 +1678,6 @@ begin
     except
       on E: Exception do begin
         // ignore
-//        DebugWrite('TTextRangeMark.Destroy', Format('%s: "%s"', [E.ClassName, E.Message]));
       end;
     end;
   finally
@@ -1750,23 +1716,18 @@ initialization
 
 finalization
   if Assigned(TimedTextRangeMarks) then begin
-//    DebugWrite('NppSimpleObjects.finalization', 'TimedTextRangeMarks[].Free');
     while TimedTextRangeMarks.Count > 0 do begin
       TRTimerID := TTextRangeMark(TimedTextRangeMarks.Items[0]).FTimerID;
       if TRTimerID <> 0 then
         KillTimer(0, TRTimerID);
-//      DebugWrite('NppSimpleObjects.finalization', 'KillTimer(' + IntToStr(TRTimerID) + ')');
       TTextRangeMark(TimedTextRangeMarks.Items[0]).Free;
       TimedTextRangeMarks.Delete(0);
     end;
-//    DebugWrite('NppSimpleObjects.finalization', 'FreeAndNil(TimedTextRangeMarks)');
     FreeAndNil(TimedTextRangeMarks);
   end;
 
   if Assigned(Application) then begin
-//    DebugWrite('NppSimpleObjects.finalization', 'FreeAndNil(Application)');
     FreeAndNil(Application);
   end;
 
 end.
-

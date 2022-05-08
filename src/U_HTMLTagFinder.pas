@@ -15,6 +15,7 @@ uses
 
 type
   TDirectionEnum = (dirBackward = -1, dirNone = 0, dirForward = 1, dirUnknown = 2);
+  TTextRange = NppSimpleObjects.TTextRange;
 
 const
   ncHighlightTimeout = 1000;
@@ -38,6 +39,8 @@ var
   ExtraChar: AnsiChar;
 begin
   ATagName := '';
+  TagEnd := TTextRange.Create(AView);
+  Result := TTextRange.Create(AView);
 
   if (APosition < 0) then begin
     if (AView.CurrentPosition <= AView.Selection.Anchor) then begin
@@ -46,11 +49,10 @@ begin
       APosition := AView.CurrentPosition;
     end;
   end;
-  Result := AView.Find('<', 0, APosition, 0);
-  if Result = nil then begin
-//    DebugWrite('ExtractTagName', 'No start tag found before given position!');
-    Result := AView.Find('<', 0, APosition);
-    if Result = nil then begin
+  AView.Find('<', Result, 0, APosition, 0);
+  if Result.Length = 0 then begin
+    AView.Find('<', Result, 0, APosition);
+    if Result.Length = 0 then begin
       ATagName := '';
       Exit;
     end;
@@ -65,13 +67,11 @@ begin
   //   - if InnerLevel > 0 then InnerLevel := InnerLevel - 1;
   //   - else TagEnd has been found
 
-  //DebugWrite('ExtractTagName', Format('Start of tag: (%d-%d): "%s"', [Tag.Start, Tag.&End, Tag.Text]));
-  TagEnd := AView.Find('>', 0, Result.EndPos + 1);
-  if TagEnd = nil then begin
+  AView.Find('>', TagEnd, 0, Result.EndPos + 1);
+  if TagEnd.Length = 0 then begin
     ATagName := '';
     Exit;
   end else begin
-    //DebugWrite('ExtractTagName', Format('End of tag: (%d-%d): "%s"', [TagEnd.Start, TagEnd.&End, TagEnd.Text]));
     Result.EndPos := TagEnd.EndPos;
     FreeAndNil(TagEnd);
   end;
@@ -82,7 +82,7 @@ begin
   ClosureFound := False;
   StartIndex := 0;
   EndIndex := 0;
-  ATagName := Result.Text;
+  ATagName := UTF8Encode(Result.Text);
   ExtraChar := #0;
   for i := 2 to Length(ATagName) - 1 do begin
     if StartIndex = 0 then begin
@@ -117,7 +117,6 @@ begin
         ClosureFound := False;
       end;
     end;
-    //DebugWrite('ExtractTagName', Format('%d=%s; opens=%d,closes=%d; start=%d,end=%d', [i, ATagName[i], integer(AOpening), integer(AClosing or ClosureFound), StartIndex, EndIndex]));
   end;
   AClosing := AClosing or ClosureFound;
   if EndIndex = 0 then
@@ -181,6 +180,7 @@ begin
   Tags := TStringList.Create;
   MatchingTag := nil;
   NextTag := nil;
+  Found := TTextRange.Create(doc);
   Direction := dirUnknown;
   try
     try
@@ -205,8 +205,6 @@ begin
             end;
           end;
 
-//          DebugWrite('FindMatchingTag', Format('Found TTextRange(%d, %d, "%s"): opens=%d, closes=%d', [Tag.StartPos, Tag.EndPos, Tag.Text, integer(TagOpens), integer(TagCloses)]));
-
           if TagOpens and TagCloses then begin // A self-closing tag
             TagName := '*' + TagName;
 
@@ -225,13 +223,10 @@ begin
 
           end else begin // A tag that doesn't open and doesn't close?!? This should never happen
             TagName := TagName + Format('[opening=%d,closing=%d]', [integer(TagOpens), integer(TagCloses)]);
-//            DebugWrite('FindMatchingTag', Format('%s (%d-%d): "%s"', [TagName, Tag.StartPos, Tag.EndPos, Tag.Text]));
             Assert(False, 'This tag doesn''t open, and doesn''t close either!?! ' + TagName);
             MessageBeep(MB_ICONERROR);
 
           end{if TagOpens and/or TagCloses};
-
-//          DebugWrite('FindMatchingTag', Format('Processed TTextRange(%d, %d, "%s")', [Tag.StartPos, Tag.EndPos, Tag.Text]));
 
         end{if Assigned(Tag)};
 
@@ -240,8 +235,9 @@ begin
         case Direction of
           dirForward: begin
             // look forward for corresponding closing tag
-            NextTag := doc.Find('<[^%\?]', SCFIND_REGEXP or SCFIND_POSIX, Tag.EndPos);
-            if Assigned(NextTag) then
+            NextTag := TTextRange.Create(doc);
+            doc.Find('<[^%\?]', NextTag, SCFIND_REGEXP or SCFIND_POSIX, Tag.EndPos);
+            if NextTag.Length <> 0 then
               NextTag.EndPos := NextTag.EndPos - 1;
           end;
           dirBackward: begin
@@ -252,8 +248,9 @@ begin
             repeat
               if Assigned(NextTag) then
                 NextTag.Free;
-              NextTag := doc.Find('>', 0, InitPos, 0);
-              if Assigned(NextTag) then begin
+              NextTag := TTextRange.Create(doc);
+              doc.Find('>', NextTag, 0, InitPos, 0);
+              if NextTag.Length <> 0 then begin
                 if NextTag.StartPos = 0 then begin
                   FreeAndNil(NextTag);
                   Break;
@@ -263,7 +260,6 @@ begin
                   InitPos := NextTag.StartPos;
                   Continue;
                 end else begin
-//                  OutputDebugString(PChar(Format('npp_htmltag:Found(%d-%d, "%s")', [NextTag.StartPos, NextTag.EndPos, NextTag.Text])));
                   NextTag.StartPos := NextTag.StartPos + 1;
                   Break;
                 end;
@@ -284,9 +280,7 @@ begin
       until (NextTag = nil) or (MatchingTag <> nil);
 
       Tags.LineBreak := #9;
-//      DebugWrite('FindMatchingTag:Done looking', Format('Tags.Count = %d (%s)', [Tags.Count, Tags.Text]));
       if Assigned(MatchingTag) then begin
-//        DebugWrite('FindMatchingTag:Marking', Format('MatchingTag = TTextRange(%d, %d, "%s")', [MatchingTag.StartPos, MatchingTag.EndPos, MatchingTag.Text]));
         if Tags.Count = 2 then begin
           Tag := TTextRange(Tags.Objects[0]);
           if ASelect then begin
@@ -306,21 +300,19 @@ begin
             try
               if AContentsOnly and True then begin // TODO: make optional, read setting from .ini ([MatchTag] SkipWhitespace=1)
                 // Leave out whitespace at begin
-                Found := doc.Find('[^ \r\n\t]', SCFIND_REGEXP or SCFIND_POSIX, Target.StartPos, Target.EndPos);
-                if Assigned(Found) then begin
+                doc.Find('[^ \r\n\t]', Found, SCFIND_REGEXP or SCFIND_POSIX, Target.StartPos, Target.EndPos);
+                if Found.Length <> 0 then begin
                   try
                     Target.StartPos := Found.StartPos;
                   finally
-                    Found.Free;
                   end;
                 end;
                 // Also leave out whitespace at end
-                Found := doc.Find('[^ \r\n\t]', SCFIND_REGEXP or SCFIND_POSIX, Target.EndPos, Target.StartPos);
-                if Assigned(Found) then begin
+                doc.Find('[^ \r\n\t]', Found, SCFIND_REGEXP or SCFIND_POSIX, Target.EndPos, Target.StartPos);
+                if Found.Length <> 0 then begin
                   try
                     Target.EndPos := Found.EndPos;
                   finally
-                    Found.Free;
                   end;
                 end;
               end;
@@ -329,7 +321,6 @@ begin
               Target.Free;
             end;
           end else begin
-//            DebugWrite('FindMatchingTag:Marking', Format('CurrentTag = TTextRange(%d, %d, "%s")', [Tag.StartPos, Tag.EndPos, Tag.Text]));
             MatchingTag.Select;
             {$IFNDEF NPPUNICODE} // NPP Unicode has always done this itself
             if HIWORD(npp.SendMessage(NPPM_GETNPPVERSION)) < 5 then begin
@@ -363,17 +354,17 @@ begin
     except
       on E: Exception do begin
         MessageBeep(MB_ICONERROR);
-//        DebugWrite('FindMatchingTag:Exception', Format('%s: "%s"', [E.ClassName, E.Message]));
       end;
     end;
   finally
     while Tags.Count > 0 do begin
       Tag := TTextRange(Tags.Objects[0]);
-//      DebugWrite('FindMatchingTag:Cleanup', Format('Tags["%s"] = TTextRange(%d, %d, "%s")', [Tags.Strings[0], Tag.StartPos, Tag.EndPos, Tag.Text]));
       Tags.Objects[0].Free;
       Tags.Delete(0);
     end;
     FreeAndNil(Tags);
+    FreeAndNil(Found);
+    FreeAndNil(NextTag);
   end;
 
   //MessageBox(npp.WindowHandle, PChar('Current tag: ' + TagName), scPTitle, MB_ICONINFORMATION);
