@@ -1,5 +1,8 @@
 h2. Changes since v1.1
 
+* 1.3.0 _unreleased_
+** Changed: migrated project to Free Pascal and Lazarus 2.2.0
+
 * 1.2.3 (2022-04-14)
 ** Fixed: don't fail the compatibility check when Notepad++ moves to a "short" version like 8.4 (#2) [ea0118f]
 
