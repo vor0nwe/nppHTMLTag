@@ -1,13 +1,10 @@
-unit scisupport;
+{$IFNDEF SCINTILLA_INC}
+{$DEFINE SCINTILLA_INC}
 
 // Support unit for scintilla use in pascal. The constants are all created from scintilla.iface by
 // a python script.
 
-interface
-
 {$DEFINE MACRO_SUPPORT}
-
-uses Windows;
 
 type
   uptr_t = NativeUInt;
@@ -1342,6 +1339,4 @@ const
     SC_UPDATE_H_SCROLL = 8;
 //--Const
 
-implementation
-
-end.
+{$ENDIF ~SCINTILLA_INC}

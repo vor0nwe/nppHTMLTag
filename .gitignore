@@ -19,7 +19,7 @@
 *.zip
 */__history/
 */__recovery/
-*/backup/
+**/backup/
 [Ll]ib/**/*
 [Bb]in/**/*
 out/

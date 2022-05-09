@@ -1,5 +1,9 @@
 unit RegExpr;
 
+{$IFDEF FPC}
+{$codePage CP1252}{$H+}
+{$ENDIF}
+
 {
      TRegExpr class library
      Delphi Regular Expressions

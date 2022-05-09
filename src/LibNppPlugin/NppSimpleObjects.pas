@@ -2,7 +2,7 @@ unit NppSimpleObjects;
 
 interface
   uses
-    Classes, Windows, SciSupport, NppPlugin;
+    Classes, Windows, NppPlugin;
 
   type
 
@@ -1212,7 +1212,7 @@ end;
 
 procedure TActiveDocument.Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer);
 begin
-  if Assigned(ATarget) then 
+  if Assigned(ATarget) then
   begin
     if AOptions <> 0 then
       Find(AText, ATarget, AOptions, ATarget.StartPos, ATarget.EndPos)
@@ -1240,10 +1240,10 @@ begin
   StartPos := SendMessage(SCI_FINDTEXT, AOptions, @TTF);
   if StartPos = -1 then begin
     ATarget.SetStart(0);
-    ATarget.SetEnd(0);    
+    ATarget.SetEnd(0);
   end else begin
     ATarget.SetStart(TTF.chrgText.cpMin);
-    ATarget.SetEnd(TTF.chrgText.cpMax);        
+    ATarget.SetEnd(TTF.chrgText.cpMax);
   end;
 end;
 

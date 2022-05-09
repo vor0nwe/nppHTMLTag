@@ -163,10 +163,14 @@ begin
 
   try
      FVersionInfo := TFileVersionInfo.Create(TSpecialFolders.DLLFullName);
+{$IFDEF FPC}
+     FVersionStr := UTF8ToString(ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), ''));
+{$ELSE}
      FVersionStr := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), '');
+{$ENDIF}
      FVersionStr :=
       Concat(FVersionStr,
-        Format(' %d.%d.%d (%s bit)',
+        WideFormat(' %d.%d.%d (%s bit)',
           [FVersionInfo.MajorVersion, FVersionInfo.MinorVersion, FVersionInfo.Revision,
           {$IFDEF CPUX64}'64'{$ELSE}'32'{$ENDIF}]));
   except
@@ -174,7 +178,7 @@ begin
   end;
 
 {$IFNDEF CPUX64}
-  FVersionStr := ReplaceStr(FVersionStr, '_unicode', '');
+  FVersionStr := UTF8ToString(ReplaceStr(UTF8Encode(FVersionStr), '_unicode', ''));
 {$ENDIF}
 end;
 
@@ -199,7 +203,11 @@ begin
     if not SupportsBigFiles then begin
       Msg := 'The installed version of HTML Tag requires Notepad++ 8.3 or newer.'#13#10
              + 'Plugin commands have been disabled.';
+{$IFDEF FPC}
+      MessageBox(App.WindowHandle, PAnsiChar(Msg), PAnsiChar(UTF8Encode(FVersionStr)), MB_ICONWARNING);
+{$ELSE}
       MessageBox(App.WindowHandle, PChar(Msg), PChar(FVersionStr), MB_ICONWARNING);
+{$ENDIF}
     end;
   except
     HandleException(ExceptObject, ExceptAddr);
@@ -220,7 +228,11 @@ begin
   SEI.lpParameters := nil;
   SEI.lpDirectory := PChar(WorkingDir);
   SEI.nShow := ShowWindow;
+{$IFDEF FPC}
+  ShellExecuteEx(LPSHELLEXECUTEINFO(@SEI));
+{$ELSE}
   ShellExecuteEx(@SEI);
+{$ENDIF}
 end;
 
 { ------------------------------------------------------------------------------------------------ }

@@ -15,8 +15,7 @@ function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
 implementation
 uses
   SysUtils,
-//  L_DebugLogger,
-  SciSupport;
+  NppPlugin;
 
 { ------------------------------------------------------------------------------------------------ }
 type

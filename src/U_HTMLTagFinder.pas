@@ -11,7 +11,7 @@ implementation
 
 uses
   SysUtils, Windows, Classes,
-  SciSupport, nppplugin;
+  nppplugin;
 
 type
   TDirectionEnum = (dirBackward = -1, dirNone = 0, dirForward = 1, dirUnknown = 2);

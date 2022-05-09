@@ -19,7 +19,6 @@ procedure DecodeEntities(const Scope: TEntityReplacementScope = ersSelection);
 implementation
 uses
   SysUtils, Windows, StrUtils,
-//  L_DebugLogger,
   NppPlugin,
   L_SpecialFolders;
 
@@ -37,8 +36,6 @@ var
   Reading: boolean;
   ErrMsg: string;
 begin
-//  DebugWrite('LoadEntities', Format('Set "%s"', [ASet]));
-
   if not Assigned(EntityLists) then begin
     EntityLists := TStringList.Create;
     EntityLists.CaseSensitive := False;
@@ -48,7 +45,7 @@ begin
   if i >= 0 then begin
     Result := TStringList(EntityLists.Objects[i]);
   end else begin
-    IniFile := IncludeTrailingPathDelimiter(GetApplication.ConfigFolder) + 'HTMLTag-entities.ini';
+    IniFile := Format('%s%s', [IncludeTrailingPathDelimiter(GetApplication.ConfigFolder), 'HTMLTag-entities.ini']);
     ErrMsg := Format('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
       IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
@@ -71,8 +68,6 @@ begin
         Lines.CaseSensitive := True;
         Lines.Duplicates := dupAccept;
         Lines.LoadFromFile(IniFile);
-
-//        DebugWrite('LoadEntities', Format('Lines loaded: %d', [Lines.Count]));
 
         Reading := False;
         for i := 0 to Lines.Count - 1 do begin
@@ -106,7 +101,6 @@ begin
         FreeAndNil(Lines);
       end;
 
-//      DebugWrite('LoadEntities', Format('%d entities loaded', [Result.Count]));
     end;
   end;
 end{LoadEntities};
@@ -179,13 +173,13 @@ begin
     EntityIndex := Entities.IndexOfObject(TObject(integer(Ord(Text[CharIndex]))));
     if EntityIndex > -1 then begin
       ReplaceEntity := True;
-      EncodedEntity := Entities.Names[EntityIndex];
+      EncodedEntity := UTF8Decode(Entities.Names[EntityIndex]);
     end else if Ord(Text[CharIndex]) > 127 then begin
       ReplaceEntity := True;
-      EncodedEntity := '#' + IntToStr(Ord(Text[CharIndex]));
+      EncodedEntity := WideFormat('#%s', [IntToStr(Ord(Text[CharIndex]))]);
     end else if (eroEncodeLineBreaks in Options) and (Ord(Text[CharIndex]) in [10, 13]) then begin
       ReplaceEntity := True;
-      EncodedEntity := '#' + IntToStr(Ord(Text[CharIndex]));
+      EncodedEntity := WideFormat('#%s', [IntToStr(Ord(Text[CharIndex]))]);
     end else begin
       ReplaceEntity := False;
     end;
@@ -235,7 +229,6 @@ begin
 
   CharIndex := Pos('&', Text);
   while CharIndex > 0 do begin
-//DebugWrite('DecodeEntities', Format('Found start at %d: "%s"', [CharIndex, Copy(Text, CharIndex, 10) + '...']));
     FirstPos := CharIndex;
     LastPos := FirstPos;
     NextIndex := Length(Text) + 1;
@@ -289,15 +282,14 @@ begin
       end;
     end;
 
-//DebugWrite('DecodeEntities', Format('FirstPos: %d; LastPos: %d; Entity: "%s"; NextIndex: %d; IsNumeric: %d; IsHex: %d', [FirstPos, LastPos, Copy(Text, FirstPos + 1, LastPos - FirstPos), NextIndex, integer(IsNumeric), integer(IsHex)]));
     if IsNumeric then begin
       if IsHex then begin
-        IsValid := TryStrToInt('$' + Copy(Text, FirstPos + 3, LastPos - FirstPos - 2), CodePoint);
+        IsValid := TryStrToInt(Format('$%s', [Copy(Text, FirstPos + 3, LastPos - FirstPos - 2)]), CodePoint);
       end else begin
-        IsValid := TryStrToInt(Copy(Text, FirstPos + 2, LastPos - FirstPos - 1), CodePoint);
+        IsValid := TryStrToInt(Format('%s', [Copy(Text, FirstPos + 2, LastPos - FirstPos - 1)]), CodePoint);
       end;
     end else begin
-      Entity := Copy(Text, FirstPos + 1, LastPos - FirstPos);
+      Entity := UTF8Encode(Copy(Text, FirstPos + 1, LastPos - FirstPos));
       EntityIndex := Entities.IndexOfName(Entity);
       if EntityIndex > -1 then begin
         CodePoint := integer(Entities.Objects[EntityIndex]);
@@ -321,7 +313,6 @@ begin
       Break;
     end;
     CharIndex := CharIndex;
-//DebugWrite('DecodeEntities', Format('NextIndex: %d; CharIndex: %d', [NextIndex, CharIndex]));
   end;
 
   if EntitiesReplaced > 0 then begin
@@ -334,12 +325,10 @@ initialization
 
 finalization
   if Assigned(EntityLists) then begin
-//    DebugWrite('Entities.finalization', 'EntityLists[].Free');
     while EntityLists.Count > 0 do begin
       EntityLists.Objects[0].Free;
       EntityLists.Delete(0);
     end;
-//    DebugWrite('Entities.finalization', 'FreeAndNil(EntityLists)');
     FreeAndNil(EntityLists);
   end;
 
