@@ -12,7 +12,7 @@ unit L_SpecialFolders;
 
 /// Extracted and adapted for FPC from L_SpecialFolders.pas, part of HTMLTag <http://fossil.2of4.net/npp_htmltag>
 /// Original unit (c) 2012 MCO and DGMR raadgevende ingenieurs BV
-/// Revisions Copyright (c) 2022 Robert Di Pardo <dipardo.r@gamil.com>
+/// Revisions Copyright (c) 2022 Robert Di Pardo <dipardo.r@gmail.com>
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 interface

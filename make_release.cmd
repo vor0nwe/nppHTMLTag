@@ -1,6 +1,6 @@
 @echo off
 ::
-:: Copyright (c) 2022 Robert Di Pardo <dipardo.r@gamil.com>
+:: Copyright (c) 2022 Robert Di Pardo <dipardo.r@gmail.com>
 ::
 :: This Source Code Form is subject to the terms of the Mozilla Public License,
 :: v. 2.0. If a copy of the MPL was not distributed with this file, You can
