@@ -33,9 +33,26 @@ You can safely use any 32-bit version of HTML Tag with any 32-bit version of Not
 
 ===============================================================================================
 
-As usual:
-Extract the DLL and accompanying files to the plugins folder under
-@%ProgramFiles%\Notepad++@ (or wherever you're running Notepad++ from) or @%AppData%\Notepad++@, and (re)start Np++.
+h3. Plugins Admin
+
+A builtin "plugin manager ":pl-admin is available in Notepad++ versions 7.6 and newer.
+
+Find _Plugins_ on the main menu bar and select _Plugins Admin_. Check the box beside _HTML Tag_ and click _Install_.
+
+h3. Manual installation
+
+New plugin versions are added to Plugins Admin only when a new Notepad++ release is published.
+To use an updated plugin before release, or downgrade to an earlier version, simply replace the plugin's DLL with another one.
+
+*Note*
+_This assumes you have already found a compatible version from a trusted source_
+
+Extract the DLL and accompanying files to the plugins folder under @%ProgramFiles%\Notepad++@ (or wherever you're running Notepad++ from).
+
+For 32-bit versions, make sure the plugin folder is named @HTMLTag_unicode@ and the module is named @HTMLTag_unicode.dll@.
+Otherwise, the folder should be named @HTMLTag@ and the module @HTMLTag.dll@.
+
+Restart Notepad++ if it's already running.
 
 
 h2. Usage
@@ -120,3 +137,4 @@ h3. To do
 [e717ed1de5]https://fossil.2of4.net/npp_htmltag/info/e717ed1de5
 [1848503]https://fossil.2of4.net/npp_htmltag/tktview?name=a3fc2e7864
 [2147949]https://fossil.2of4.net/npp_htmltag/tktview?name=43695affda
+[pl-admin]https://npp-user-manual.org/docs/plugins/#install-using-plugins-admin
