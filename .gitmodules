@@ -1,0 +1,4 @@
+[submodule "fpGUI"]
+	path = src/Forms/fpg
+	url = https://github.com/graemeg/fpGUI.git
+	branch = maint

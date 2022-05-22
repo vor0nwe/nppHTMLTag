@@ -6,6 +6,8 @@ interface
 uses
   SysUtils, Windows,
   NppPlugin,
+  fpg_main,
+  AboutForm,
   NppSimpleObjects, L_VersionInfoW;
 
 type
@@ -31,6 +33,7 @@ type
     procedure ShellExecute(const FullName: string; const Verb: string = 'open'; const WorkingDir: string = ''; const ShowWindow: Integer = SW_SHOWDEFAULT);
 
     property App: TApplication  read FApp;
+    property Version: nppString  read FVersionStr;
   end;
 
 procedure _commandFindMatchingTag(); cdecl;
@@ -45,6 +48,7 @@ procedure _commandAbout(); cdecl;
 
 var
   Npp: TNppPluginHTMLTag;
+  About: TFrmAbout;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
@@ -187,6 +191,8 @@ destructor TNppPluginHTMLTag.Destroy;
 begin
   if Assigned(FVersionInfo) then
     FreeAndNil(FVersionInfo);
+  if Assigned(About) then
+    FreeAndNil(About);
   inherited;
 end;
 
@@ -338,33 +344,12 @@ end {TNppPluginHTMLTag.commandDecodeJS};
 
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandAbout;
-var
-  Text, DLLName: string;
 begin
   try
-    DLLName := TSpecialFolders.DLLFullName;
-    if not Assigned(FVersionInfo) then begin
-      FVersionInfo := TFileVersionInfo.Create(DLLName);
+    if not Assigned(About) then begin
+      About := TFrmAbout.Create(nil);
     end;
-
-    Text := Format('%s'#10#10
-                      + 'Plug-in location: %s'#10
-                      + 'Config location: %s'#10
-                      + 'Bugs: %s'#10
-                      + 'Download: %s'#10#10
-                      + #$00A9' 2011-2020 %s - %s'#10
-                      + '  a.k.a. %s - %s (v0.1 - v1.1)'#10
-                      + #$00A9' 2022 Robert Di Pardo (since v1.2)'#10#10
-                      + 'Licensed under the %s - %s',
-                     [FVersionStr,
-                      ExtractFileDir(DLLName),
-                      App.ConfigFolder,
-                      FVersionInfo.Comments,
-                      'https://bitbucket.org/rdipardo/htmltag/downloads',
-                      FVersionInfo.LegalCopyright, 'http://fossil.2of4.net/npp_htmltag', // 'http://martijn.coppoolse.com/software',
-                      'vor0nwe', 'http://sourceforge.net/users/vor0nwe',
-                      'MPL 1.1', 'http://www.mozilla.org/MPL/1.1']);
-    MessageBox(App.WindowHandle, PChar(Text), PChar(FVersionInfo.FileDescription), MB_ICONINFORMATION)
+      About.Show;
   except
     HandleException(ExceptObject, ExceptAddr);
   end;
@@ -404,4 +389,5 @@ end {TNppPluginHTMLTag.SupportsBigFiles};
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 initialization
   Npp := TNppPluginHTMLTag.Create;
+  fpgApplication.Initialize;
 end.

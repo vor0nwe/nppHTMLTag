@@ -1,5 +1,9 @@
 unit L_VersionInfoW;
 
+{$IFDEF FPC}
+{$codePage UTF8}
+{$ENDIF}
+
 interface
 
 uses
@@ -98,7 +102,7 @@ var
   var
     Value   : PChar;
   begin
-    SubBlock := WideFormat('\\StringFileInfo\\%.4x%.4x\\%s', [PLang.wLanguage, PLang.wCodePage, AName]);
+    SubBlock := Format('\\StringFileInfo\\%.4x%.4x\\%s', [PLang.wLanguage, PLang.wCodePage, AName]);
     if VerQueryValue(Buffer, PChar(SubBlock), Pointer(Value), Dummy) then
       Result := string(Value)
     else

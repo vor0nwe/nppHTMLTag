@@ -15,6 +15,7 @@
       <Title Value="HTMLTag"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
+      <Icon Value="0"/>
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
@@ -33,7 +34,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="..;..\Common;$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..;..\LibNppPlugin"/>
+            <OtherUnitFiles Value="..;..\LibNppPlugin;..\Forms"/>
             <UnitOutputDirectory Value="..\..\out\obj\$(TargetCPU)-$(TargetOS)\$(BuildMode)"/>
           </SearchPaths>
           <Parsing>
@@ -59,6 +60,9 @@
               <StripSymbols Value="True"/>
             </Debugging>
             <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
               <ExecutableType Value="Library"/>
             </Options>
           </Linking>
@@ -82,7 +86,13 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
-    <Units Count="7">
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="fpgui_toolkit"/>
+        <DefaultFilename Value="..\Forms\fpg\src\corelib\gdi\fpgui_toolkit.lpk"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="8">
       <Unit0>
         <Filename Value="HTMLTag.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -111,6 +121,10 @@
         <Filename Value="..\LibNppPlugin\nppplugin.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="..\Forms\AboutForm.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -121,7 +135,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="..;..\Common;$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..;..\LibNppPlugin"/>
+      <OtherUnitFiles Value="..;..\LibNppPlugin;..\Forms"/>
       <UnitOutputDirectory Value="..\..\out\obj\$(TargetCPU)-$(TargetOS)\$(BuildMode)"/>
     </SearchPaths>
     <Parsing>
@@ -149,6 +163,9 @@
         <UseExternalDbgSyms Value="True"/>
       </Debugging>
       <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
         <ExecutableType Value="Library"/>
       </Options>
     </Linking>
