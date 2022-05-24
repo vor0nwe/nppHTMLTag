@@ -414,6 +414,8 @@ type
     L_END
   );
 
+  TWinVer = ( WV_UNKNOWN, WV_WIN32S, WV_95, WV_98, WV_ME, WV_NT, WV_W2K, WV_XP, WV_S2003, WV_XPX64, WV_VISTA, WV_WIN7, WV_WIN8, WV_WIN81, WV_WIN10 );
+
   TSessionInfo = record
     SessionFilePathName: nppString;
     NumFiles: Integer;

@@ -29,7 +29,10 @@ const
   License = 'Licensed under the MPL 1.1';
   FpgLicense = 'Licensed under the LGPL 2.1 with static linking exception';
   EntitiesConf = 'HTMLTag-entities.ini';
-  BtnWidth: integer = 85;
+  BtnWidth = 85;
+  InitFromHeight = 450;
+  InitTextHeight = 18;
+  NewLine = #13#10;
 
 type
   TFrmAbout = class(TfpgForm)
@@ -66,11 +69,13 @@ type
   private
     FVersion: TFileVersionInfo;
     FDLLName: string;
+    FDidResize: boolean;
+    property DidResize: boolean read FDidResize write FDidResize default False;
     procedure FindEntities;
     procedure SetConfigFilePath(Path: TfpgPanel);
     procedure WrapFilePath(Path: TfpgPanel);
     procedure SetUrl(Lbl: TfpgPanel);
-    function MakeText(const Txt: string; const Height: TfpgCoord = 18): TfpgPanel;
+    function MakeText(const Txt: string; const Height: TfpgCoord = InitTextHeight): TfpgPanel;
   end;
 
 implementation
@@ -80,6 +85,7 @@ uses
   StrUtils,
   Windows,
   L_SpecialFolders,
+  NppPlugin,
   U_Npp_HTMLTag;
 
 constructor TFrmAbout.Create(AOwner: TComponent);
@@ -89,7 +95,7 @@ begin
     FDLLName := TSpecialFolders.DLLFullName;
     FVersion := TFileVersionInfo.Create(FDLLName);
     Width := 575;
-    Height := 450;
+    Height := InitFromHeight;
     BackgroundColor := clWhite;
     WindowAttributes := [waBorderless];
     WindowPosition := wpScreenCenter;
@@ -98,7 +104,7 @@ begin
     WindowTitle := 'About';
 
     if Assigned(FVersion) then
-      SetWindowTitle(FVersion.FileDescription);
+      SetWindowTitle('  ' + FVersion.FileDescription);
 
     txtPluginVersion := MakeText(UTF8ToAnsi(UTF8Encode(Npp.Version)), 24);
     txtPluginVersion.FontDesc := 'Tahoma-9';
@@ -134,9 +140,11 @@ begin
 
     lblHomeDir := MakeText('Plugin location');
     txtHomeDir := MakeText(ExtractFileDir(FDLLName), 24);
+    WrapFilePath(txtHomeDir);
 
     lblConfigDir := MakeText('Config location');
     txtConfigDir := MakeText(UTF8ToAnsi(UTF8Encode(Npp.App.ConfigFolder)), 24);
+    WrapFilePath(txtConfigDir);
 
     lblEntities := MakeText('HTML entities file');
     txtEntities := MakeText('', 24);
@@ -182,12 +190,12 @@ end;
 
 procedure TFrmAbout.GoToChangelog({%H-}Sender: TObject);
 var
-  ChangeLog: WideString;
+  ChangeLog: string;
 begin
   ChangeLog := 'https://bitbucket.org/rdipardo/htmltag/src/HEAD/NEWS.textile';
 
   if Assigned(FVersion) then
-    ChangeLog := WideFormat(
+    ChangeLog := Format(
       'https://bitbucket.org/rdipardo/htmltag/src/v%d.%d.%d/NEWS.textile',
       [FVersion.MajorVersion, FVersion.MinorVersion, FVersion.Revision]);
 
@@ -197,18 +205,22 @@ end;
 
 procedure TFrmAbout.FollowPath(Sender: TObject);
 begin
-  Npp.ShellExecute(PChar(ReplaceStr(TfpgPanel(Sender).Hint, '...'#13#10, '')));
+  Npp.ShellExecute(PChar(ReplaceStr(TfpgPanel(Sender).Hint, NewLine, '')));
   Close;
 end;
 
 procedure TFrmAbout.ShowLink(Sender: TObject);
 begin
   TfpgPanel(Sender).MouseCursor := mcHand;
+  TfpgPanel(Sender).TextColor := clPeru;
+  TfpgPanel(Sender).FontDesc := TfpgPanel(Sender).FontDesc + ':Underline';
 end;
 
 procedure TFrmAbout.RevertCursor(Sender: TObject);
 begin
   TfpgPanel(Sender).MouseCursor := mcDefault;
+  TfpgPanel(Sender).TextColor := clHyperLink;
+  TfpgPanel(Sender).FontDesc := ReplaceStr(TfpgPanel(Sender).FontDesc, ':Underline', '');
 end;
 
 function TFrmAbout.MakeText(const Txt: string; const Height: TfpgCoord): TfpgPanel;
@@ -257,32 +269,60 @@ procedure TFrmAbout.FindEntities;
 var
   Entities: string;
 begin
-  Entities := IncludeTrailingPathDelimiter(txtConfigDir.Text) + EntitiesConf;
+  Entities :=
+    IncludeTrailingPathDelimiter(ReplaceStr(txtConfigDir.Text, NewLine, '')) +
+    EntitiesConf;
 
   if not FileExists(Entities) then
-    txtEntities.Text := IncludeTrailingPathDelimiter(txtHomeDir.Text) + EntitiesConf
+    txtEntities.Text :=
+      IncludeTrailingPathDelimiter(ReplaceStr(txtHomeDir.Text, NewLine, '')) +
+      EntitiesConf
   else
     txtEntities.Text := Entities;
 
   SetConfigFilePath(txtEntities);
+  DidResize := ((self.Height > InitFromHeight) or (txtEntities.Height > InitTextHeight));
 end;
 
 procedure TFrmAbout.WrapFilePath(Path: TfpgPanel);
 var
   Txt: string;
+  Bump, WrapAt: TfpgCoord;
+  OS: TWinVer;
   i: integer;
 begin
   with Path do
   begin
     Txt := Text;
-    if Length(Txt) > BtnWidth then
+    OS := TWinVer(Npp.App.SendMessage(NPPM_GETWINDOWSVERSION));
+
+    if (OS <= WV_WIN7) then
+    begin
+      WrapAt := (self.Width div 5);
+      Bump := (Length(Text) div 16);
+    end
+    else
+    begin
+      WrapAt := Round(BtnWidth * 0.8);
+      Bump := (Length(Text) div 4);
+    end;
+
+    if Length(Txt) > WrapAt then
     begin
       // break long path names at directory separator
       for i := 1 to Length(Txt) do
       begin
-        if (Txt[i] = PathDelim) and (i mod 8 = 0) then
-          Text := Concat(LeftStr(Txt, i), '...'#13#10,
+        if (Txt[i] = PathDelim) and (i >= (Length(Text) div 2)) then
+        begin
+          Text := Concat(LeftStr(Txt, i), NewLine,
             RightStr(Txt, Length(Txt) - i));
+          break;
+        end;
+      end;
+      if (not self.DidResize) then
+      begin
+        Height := Height + Bump;
+        self.Height := self.Height + Bump;
       end;
     end;
   end;
