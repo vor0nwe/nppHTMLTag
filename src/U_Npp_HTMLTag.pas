@@ -16,7 +16,6 @@ type
     FApp: TApplication;
     FVersionInfo: TFileVersionInfo;
     FVersionStr: nppString;
-    function SupportsBigFiles: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -356,30 +355,6 @@ begin
 end {TNppPluginHTMLTag.commandAbout};
 
 { ------------------------------------------------------------------------------------------------ }
-function TNppPluginHTMLTag.SupportsBigFiles: Boolean;
-const
-  PatchReleases: Array[0..2] of Word = ( 191, 192, 193 );
-var
-  NppVersion: Cardinal;
-  IsPatchRelease: Boolean;
-  i: Byte;
-begin
-  NppVersion := FApp.SendMessage(NPPM_GETNPPVERSION);
-  IsPatchRelease := False;
-
-  for i := 0 to Length(PatchReleases) - 1 do
-  begin
-    IsPatchRelease := (LOWORD(NppVersion) = PatchReleases[i]);
-    if IsPatchRelease then Break;
-  end;
-
-  Result :=
-    (HIWORD(NppVersion) > 8) or
-    ((HIWORD(NppVersion) = 8) and
-      // 8.3 -> 8,3 (*not* 8,30)
-      (((LOWORD(NppVersion) >= 3) and (LOWORD(NppVersion) <= 9)) or
-       ((LOWORD(NppVersion) > 21) and not IsPatchRelease)))
-end {TNppPluginHTMLTag.SupportsBigFiles};
 
 
 

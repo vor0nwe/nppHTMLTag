@@ -36,6 +36,8 @@ uses
     FConfigDir: string;
   protected
     PluginName: nppString;
+    function SupportsBigFiles: Boolean;
+    function GetNppVersion: Cardinal;
     function GetPluginsConfigDir: string;
     function AddFuncSeparator: Integer;
     function AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD): Integer; overload;
@@ -348,6 +350,36 @@ end;
 function TNppPlugin.CmdIdFromDlgId(DlgId: Integer): Integer;
 begin
   Result := self.FuncArray[DlgId].CmdId;
+end;
+
+function TNppPlugin.GetNppVersion: Cardinal;
+var
+  NppVersion: Cardinal;
+begin
+  NppVersion := SendMessage(self.NppData.NppHandle, NPPM_GETNPPVERSION, 0, 0);
+  // retrieve the zero-padded version, if available
+  // https://github.com/notepad-plus-plus/notepad-plus-plus/commit/ef609c896f209ecffd8130c3e3327ca8a8157e72
+  if ((HIWORD(NppVersion) > 8) or
+      ((HIWORD(NppVersion) = 8) and
+        (((LOWORD(NppVersion) >= 41) and (not (LOWORD(NppVersion) in [191, 192, 193]))) or
+          (LOWORD(NppVersion) in [5, 6, 7, 8, 9])))) then
+    NppVersion := SendMessage(self.NppData.NppHandle, NPPM_GETNPPVERSION, 1, 0);
+
+  Result := NppVersion;
+end;
+
+function TNppPlugin.SupportsBigFiles: Boolean;
+var
+  NppVersion: Cardinal;
+begin
+  NppVersion := GetNppVersion;
+  Result :=
+    (HIWORD(NppVersion) > 8) or
+    ((HIWORD(NppVersion) = 8) and
+      // 8.3 => 8,3 *not* 8,30
+      ((LOWORD(NppVersion) in [3, 4]) or
+       // Also check for N++ versions 8.1.9.1, 8.1.9.2 and 8.1.9.3
+       ((LOWORD(NppVersion) > 21) and (not (LOWORD(NppVersion) in [191, 192, 193])))));
 end;
 
 end.
