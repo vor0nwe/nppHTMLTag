@@ -1045,13 +1045,17 @@ begin
     SCI_GETCARETLINEBACKALPHA: Result := 'SCI_GETCARETLINEBACKALPHA';
     SCI_STARTRECORD: Result := 'SCI_STARTRECORD';
     SCI_STOPRECORD: Result := 'SCI_STOPRECORD';
+{$IFNDEF SCI_5}
     SCI_SETLEXER: Result := 'SCI_SETLEXER';
+{$ENDIF}
     SCI_GETLEXER: Result := 'SCI_GETLEXER';
     SCI_COLOURISE: Result := 'SCI_COLOURISE';
     SCI_SETPROPERTY: Result := 'SCI_SETPROPERTY';
     SCI_SETKEYWORDS: Result := 'SCI_SETKEYWORDS';
+{$IFNDEF SCI_5}
     SCI_SETLEXERLANGUAGE: Result := 'SCI_SETLEXERLANGUAGE';
     SCI_LOADLEXERLIBRARY: Result := 'SCI_LOADLEXERLIBRARY';
+{$ENDIF}
     SCI_GETPROPERTY: Result := 'SCI_GETPROPERTY';
     SCI_GETPROPERTYEXPANDED: Result := 'SCI_GETPROPERTYEXPANDED';
     SCI_GETPROPERTYINT: Result := 'SCI_GETPROPERTYINT';
@@ -1483,7 +1487,15 @@ var
 begin
   Len := SendMessage(SCI_GETTEXT, WPARAM(High(Sci_PositionU)) - 1, nil);
 {$IFDEF SCI_5}
+{$IFNDEF FPC}
   Len := Round(MinValue([Len + 1, SendMessage(SCI_GETLENGTH)]));
+{$ELSE}
+{$IFDEF CPUx64}
+  Len := Round(MinValue([Extended(Len + 1), Extended(SendMessage(SCI_GETLENGTH))]));
+{$ELSE}
+  Inc(Len);
+{$ENDIF}
+{$ENDIF}
 {$ENDIF}
   SetLength(Chars, Len);
   SendMessage(SCI_GETTEXT, Len, PAnsiChar(Chars));

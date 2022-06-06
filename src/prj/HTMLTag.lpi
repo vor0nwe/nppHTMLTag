@@ -69,6 +69,7 @@
           <Other>
             <CustomOptions Value="-dUNICODE
 -dNPPUNICODE
+-dSCI_5
 -FcUTF8
 -vm2026,4104,5024"/>
             <OtherDefines Count="2">
@@ -173,6 +174,7 @@
       <CustomOptions Value="-dUNICODE
 -dNPPUNICODE
 -FcUTF8
+-dSCI_5
 -WN
 -vm2026"/>
     </Other>
