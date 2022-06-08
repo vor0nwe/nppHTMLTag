@@ -1,6 +1,10 @@
 h2. Changes since v1.1
 
-* 1.3.0 _unreleased_
+* 1.3.0 (2022-06-07)
+** Fixed: resolve a memory leak in the JavaScript decoder [4fc5a0b]
+** Changed: conceal deprecated Scintilla messages from the compiler and pad the return value of @TActiveDocument.GetText@ [6947aab]
+** Changed: future-proof the compatibility check by using the zero-padded editor version number, available since N++ 8.4.1 [fde2a41]
+** Changed: the About dialog is now an interactive form [b4710f8]
 ** Changed: migrated project to Free Pascal and Lazarus 2.2.0
 
 * 1.2.3 (2022-04-14)
