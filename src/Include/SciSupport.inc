@@ -1,8 +1,14 @@
 {$IFNDEF SCINTILLA_INC}
 {$DEFINE SCINTILLA_INC}
 
-// Support unit for scintilla use in pascal. The constants are all created from scintilla.iface by
-// a python script.
+{
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this file,
+  You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Copyright (c) Martijn Coppoolse <https://sourceforge.net/u/vor0nwe>
+  Revisions copyright (c) 2022 Robert Di Pardo <dipardo.r@gmail.com>
+}
 
 {$DEFINE MACRO_SUPPORT}
 

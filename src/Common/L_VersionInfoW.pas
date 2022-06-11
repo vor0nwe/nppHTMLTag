@@ -4,6 +4,15 @@ unit L_VersionInfoW;
 {$codePage UTF8}
 {$ENDIF}
 
+{
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this file,
+  You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  Copyright (c) Martijn Coppoolse <https://sourceforge.net/u/vor0nwe>
+  Revisions copyright (c) 2022 Robert Di Pardo <dipardo.r@gmail.com>
+}
+
 interface
 
 uses

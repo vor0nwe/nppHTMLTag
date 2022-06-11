@@ -1,6 +1,16 @@
 {$IFNDEF NPP_INC}
 {$DEFINE NPP_INC}
 {
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this file,
+    You can obtain one at https://mozilla.org/MPL/2.0/.
+
+    Copyright (c) Martijn Coppoolse <https://sourceforge.net/u/vor0nwe>
+    Revisions copyright (c) 2022 Robert Di Pardo <dipardo.r@gmail.com>
+
+    Alternatively, the contents of this file may be used under the terms
+    of the GNU General Public License Version 2 or later, as described below:
+
     This file is part of DBGP Plugin for Notepad++
     Copyright (C) 2007  Damjan Zobo Cvetko
 
