@@ -85,7 +85,13 @@ begin
   ATagName := UTF8Encode(Result.Text);
   ExtraChar := #0;
   for i := 2 to Length(ATagName) - 1 do begin
-    if StartIndex = 0 then begin
+    // Exit early when it's obviously a self-closing tag
+    if (CompareStr(Copy(ATagName, i), '/>') = 0) then begin
+      AOpening := True;
+      AClosing := True;
+      EndIndex := i - 1;
+      break;
+    end else if StartIndex = 0 then begin
       case ATagName[i] of
         '/': begin
           AOpening := False;
@@ -238,7 +244,8 @@ begin
             NextTag := TTextRange.Create(doc);
             doc.Find('<[^%\?]', NextTag, SCFIND_REGEXP or SCFIND_POSIX, Tag.EndPos);
             if NextTag.Length <> 0 then
-              NextTag.EndPos := NextTag.EndPos - 1;
+              NextTag.EndPos := NextTag.EndPos - 1
+            else FreeAndNil(NextTag);
           end;
           dirBackward: begin
             // look backward for corresponding opening tag
@@ -263,7 +270,7 @@ begin
                   NextTag.StartPos := NextTag.StartPos + 1;
                   Break;
                 end;
-              end;
+              end else FreeAndNil(NextTag);
             until not Assigned(NextTag);
 
           end;
