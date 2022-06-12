@@ -8,7 +8,7 @@
 ::
 SETLOCAL
 
-set "VERSION=130"
+set "VERSION=131"
 set "PLUGIN=HTMLTag"
 set "PLUGIN_LEGACY_DLL=out\i386-win32\Release\%PLUGIN%_unicode.dll"
 set "SLUG_SRC=out\%PLUGIN%_v%VERSION%"

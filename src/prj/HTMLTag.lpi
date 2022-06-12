@@ -21,7 +21,8 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="3"/>
-      <StringTable Comments="https://bitbucket.org/rdipardo/htmltag/issues" CompanyName="Voronwë" FileDescription="HTMLTag plugin for Notepad++" InternalName="$NameOnly($(ProjFile))" LegalCopyright="Martijn Coppoolse" OriginalFilename="$NameOnly($(ProjFile)).dll" ProductName="$NameOnly($(ProjFile))" ProductVersion="1.3.0.0"/>
+      <RevisionNr Value="1"/>
+      <StringTable Comments="https://bitbucket.org/rdipardo/htmltag/issues" CompanyName="Voronwë" FileDescription="HTMLTag plugin for Notepad++" InternalName="$NameOnly($(ProjFile))" LegalCopyright="Martijn Coppoolse" OriginalFilename="$NameOnly($(ProjFile)).dll" ProductName="$NameOnly($(ProjFile))" ProductVersion="1.3.1.0"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Debug" Default="True"/>
@@ -76,6 +77,10 @@
               <Define0 Value="UNICODE"/>
               <Define1 Value="NPPUNICODE"/>
             </OtherDefines>
+            <ExecuteAfter>
+              <Command Value="&quot;C:\Users\Rob\scoop\apps\upx\current\upx.exe&quot; --best -q &quot;$TargetFile()&quot;"/>
+              <CompileReasons Compile="False" Run="False"/>
+            </ExecuteAfter>
           </Other>
         </CompilerOptions>
       </Item2>
