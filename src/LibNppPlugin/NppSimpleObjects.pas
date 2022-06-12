@@ -391,7 +391,12 @@ var
   Chars: AnsiString;
   TxtRng: Integer;
 begin
-  Chars := UTF8Encode(AValue);
+  case FEditor.SendMessage(SCI_GETCODEPAGE) of
+  SC_CP_UTF8:
+    Chars := UTF8Encode(AValue)
+  else
+    Chars := AValue;
+  end;
   TxtRng := System.Length(Chars);
   FEditor.SendMessage(SCI_SETTARGETSTART, FStartPos);
   FEditor.SendMessage(SCI_SETTARGETEND, FEndPos);
@@ -568,7 +573,12 @@ var
 begin
   Chars := AnsiString(StringOfChar(#0, Self.GetLength + 1));
   FEditor.SendMessage(SCI_GETSELTEXT, 0, PAnsiChar(Chars));
-  Result := WideString(UTF8Decode(Chars));
+  case FEditor.SendMessage(SCI_GETCODEPAGE) of
+    SC_CP_UTF8:
+      Result := WideString(UTF8Decode(Chars))
+    else
+      Result := WideString(UTF8Encode(Chars))
+  end;
 end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TSelection.SetText(const AValue: WideString);
@@ -577,7 +587,12 @@ var
   NewLength, EndPos: Sci_Position;
   Reversed: boolean;
 begin
-  Chars := UTF8Encode(AValue);
+  case FEditor.SendMessage(SCI_GETCODEPAGE) of
+  SC_CP_UTF8:
+    Chars := UTF8Encode(AValue)
+  else
+    Chars := AValue;
+  end;
   NewLength := System.Length(Chars) - 1;
   Reversed := (Self.Anchor > Self.GetCurrentPos);
   FEditor.SendMessage(SCI_REPLACESEL, 0, PAnsiChar(Chars));
