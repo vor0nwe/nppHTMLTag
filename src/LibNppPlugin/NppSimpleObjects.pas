@@ -1533,8 +1533,16 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 
 procedure TActiveDocument.SetText(const AValue: WideString);
+var
+  Chars: AnsiString;
 begin
-  SendMessage(SCI_SETTEXT, 0, PAnsiChar(UTF8Encode(AValue)));
+  case Self.SendMessage(SCI_GETCODEPAGE) of
+  SC_CP_UTF8:
+    Chars := UTF8Encode(AValue)
+  else
+    Chars := AValue;
+  end;
+  SendMessage(SCI_SETTEXT, 0, PAnsiChar(Chars));
 end;
 
 { ================================================================================================ }
