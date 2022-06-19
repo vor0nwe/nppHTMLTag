@@ -1508,6 +1508,9 @@ function TActiveDocument.GetText: WideString;
 var
   Chars: AnsiString;
   Len: Sci_PositionU;
+  {$IF DEFINED(SCI_5) AND DEFINED(FPC) AND DEFINED(CPUx64)}
+  SafeLen, SafeDocLen: Extended;
+  {$ENDIF}
 begin
   Len := SendMessage(SCI_GETTEXT, WPARAM(High(Sci_PositionU)) - 1, nil);
 {$IFDEF SCI_5}
@@ -1515,7 +1518,9 @@ begin
   Len := Round(MinValue([Len + 1, SendMessage(SCI_GETLENGTH)]));
 {$ELSE}
 {$IFDEF CPUx64}
-  Len := Round(MinValue([Extended(Len + 1), Extended(SendMessage(SCI_GETLENGTH))]));
+  SafeLen := Len + 1.0;
+  SafeDocLen := SendMessage(SCI_GETLENGTH) * 1.0;
+  Len := Round(MinValue([SafeLen, SafeDocLen]));
 {$ELSE}
   Inc(Len);
 {$ENDIF}
@@ -1554,8 +1559,16 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 
 procedure TActiveDocument.SetText(const AValue: WideString);
+var
+  Chars: AnsiString;
 begin
-  SendMessage(SCI_SETTEXT, 0, PAnsiChar(UTF8Encode(AValue)));
+  case Self.SendMessage(SCI_GETCODEPAGE) of
+  SC_CP_UTF8:
+    Chars := UTF8Encode(AValue)
+  else
+    Chars := AValue;
+  end;
+  SendMessage(SCI_SETTEXT, 0, PAnsiChar(Chars));
 end;
 
 { ================================================================================================ }
