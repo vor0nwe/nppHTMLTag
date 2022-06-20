@@ -23,11 +23,13 @@ function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
 uses
+  Windows,
   SysUtils,
   NppPlugin;
 
 { ------------------------------------------------------------------------------------------------ }
 type
+  TTextRange = NppSimpleObjects.TTextRange;
   TConversionMethod = function(var Text: WideString): Integer;
   TRangeConversionMethod = function(const TextRange: TTextRange): Integer;
 
@@ -114,6 +116,7 @@ var
   npp: TApplication;
   doc: TActiveDocument;
   Target, Match: TTextRange;
+  NewStart, NewEnd: Cardinal;
 begin
   Result := 0;
 
@@ -135,6 +138,27 @@ begin
         Inc(Result);
       end;
     until Match.Length = 0;
+
+    if ((Result > 1) and (Target.StartPos > 0)) then
+    begin
+      case GetACP of
+        65001:
+          begin
+            // use a wider offset so we don't land in between high-low bytes
+            if Target.StartPos > 1 then
+              NewStart := 2
+            else
+              NewStart := 1;
+            NewEnd := 2;
+          end;
+        else
+        begin
+          NewStart := 1;
+          NewEnd := 1;
+        end;
+      end;
+      doc.SendMessage(SCI_SETSEL, doc.Selection.StartPos - NewStart, doc.Selection.EndPos + NewEnd);
+    end;
   finally
     Target.Free;
     Match.Free;
