@@ -1,14 +1,18 @@
 h2. Changes since v1.1
 
-* 1.3.2 (2022-06-12)
-** Fixed: encode text selections according to the document's code page (#3) [280d9fd]
+* 1.3.3 (2022-06-20)
+** Fixed: use Unicode API functions to locate plugin module and entities file path [6ee5ae0]
+** Fixed: restore selection area around decoded JavaScript entities [5fad78a]
+** Fixed: correct length-always-zero conversion error in @TActiveDocument.GetText@ and make @SetText@ consider document encoding [80cd87a]
+** Changed: open the entities file in Notepad++ when the About dialog is clicked [6ee5ae0]
 
-* 1.3.1 (2022-06-12)
+* 1.3.1, 1.3.2 (2022-06-12)
+** Fixed: encode text selections according to the document's code page (#3) [280d9fd]
 ** Fixed: unmatched tags no longer hang up the editor [5c4de22], as was reported "here":tagFinderHangs
 ** Fixed: the source licence is now more compliant with the GPL-covered units borrowed from DBGp [9da9a57]
 ** Changed: upgraded project to Lazarus 2.2.2 (FPC remains the same at 3.2.2)
 
-* 1.3.0 (2022-06-07)
+* 1.3.0 (2022-06-07) _*unstable*_
 ** Fixed: resolve a memory leak in the JavaScript decoder [4fc5a0b]
 ** Changed: conceal deprecated Scintilla messages from the compiler and pad the return value of @TActiveDocument.GetText@ [6947aab]
 ** Changed: future-proof the compatibility check by using the zero-padded editor version number, available since N++ 8.4.1 [fde2a41]
