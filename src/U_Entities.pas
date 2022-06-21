@@ -38,7 +38,7 @@ var
 { ------------------------------------------------------------------------------------------------ }
 function LoadEntities(ANpp: TApplication; ASet: string = 'HTML 4'): TStringList;
 var
-  IniFile: string;
+  IniFile: WideString;
   Lines: TStringList;
   Line, Value, Entity: string;
   i, Separation, CodePoint: integer;
@@ -54,7 +54,7 @@ begin
   if i >= 0 then begin
     Result := TStringList(EntityLists.Objects[i]);
   end else begin
-    IniFile := Format('%s%s', [IncludeTrailingPathDelimiter(GetApplication.ConfigFolder), 'HTMLTag-entities.ini']);
+    IniFile := WideFormat('%s%s', [IncludeTrailingPathDelimiter(GetApplication.ConfigFolder), 'HTMLTag-entities.ini']);
     ErrMsg := Format('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
       IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
@@ -76,7 +76,7 @@ begin
       try
         Lines.CaseSensitive := True;
         Lines.Duplicates := dupAccept;
-        Lines.LoadFromFile(IniFile);
+        Lines.LoadFromFile(UTF8Encode(IniFile));
 
         Reading := False;
         for i := 0 to Lines.Count - 1 do begin

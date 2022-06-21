@@ -2,6 +2,7 @@ unit L_VersionInfoW;
 
 {$IFDEF FPC}
 {$codePage UTF8}
+{$mode delphiunicode}
 {$ENDIF}
 
 {
@@ -111,8 +112,8 @@ var
   var
     Value   : PChar;
   begin
-    SubBlock := Format('\\StringFileInfo\\%.4x%.4x\\%s', [PLang.wLanguage, PLang.wCodePage, AName]);
-    if VerQueryValue(Buffer, PChar(SubBlock), Pointer(Value), Dummy) then
+    SubBlock := WideFormat('\\StringFileInfo\\%.4x%.4x\\%s', [PLang.wLanguage, PLang.wCodePage, AName]);
+    if VerQueryValueW(Buffer, PChar(SubBlock), Pointer(Value), Dummy) then
       Result := string(Value)
     else
       Result := '';
@@ -124,15 +125,15 @@ var
 begin
   FFilename := AFileName;
 
-  BufferSize := GetFileVersionInfoSize(PChar(AFileName), Dummy);
+  BufferSize := GetFileVersionInfoSizeW(PChar(AFileName), Dummy);
   FHasVersionInfo := (Buffersize > 0);
   if FHasVersionInfo then begin
     Buffer := AllocMem(BufferSize);
     try
-      GetFileVersionInfo(PChar(AFileName), Dummy, BufferSize, Buffer);
+      GetFileVersionInfoW(PChar(AFileName), Dummy, BufferSize, Buffer);
 
       SubBlock := '\\VarFileInfo\\Translation';
-      VerQueryValue(Buffer, PChar(SubBlock), Pointer(PLang), Dummy);
+      VerQueryValueW(Buffer, PChar(SubBlock), Pointer(PLang), Dummy);
 
       FCompanyName      := QueryValue('CompanyName');
       FFileDescription  := QueryValue('FileDescription');
@@ -145,7 +146,7 @@ begin
       FProductVersion   := QueryValue('ProductVersion');
       FComments         := QueryValue('Comments');
 
-      VerQueryValue(Buffer, '\', Pointer(PInfoBlock), Dummy);
+      VerQueryValueW(Buffer, '\', Pointer(PInfoBlock), Dummy);
       FMajorVersion := PInfoBlock.dwFileVersionMS shr 16;
       FMinorVersion := PInfoBlock.dwFileVersionMS and 65535;
       FRevision     := PInfoBlock.dwFileVersionLS shr 16;

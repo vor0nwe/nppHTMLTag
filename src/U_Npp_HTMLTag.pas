@@ -174,7 +174,7 @@ begin
   try
      FVersionInfo := TFileVersionInfo.Create(TSpecialFolders.DLLFullName);
 {$IFDEF FPC}
-     FVersionStr := UTF8ToString(ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), ''));
+     FVersionStr := UTF8ToString(ChangeFileExt(ExtractFileName(UTF8Encode(TSpecialFolders.DLLFullName)), ''));
 {$ELSE}
      FVersionStr := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), '');
 {$ENDIF}

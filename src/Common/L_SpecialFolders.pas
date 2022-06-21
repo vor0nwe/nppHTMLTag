@@ -1,7 +1,7 @@
 unit L_SpecialFolders;
 
 {$IFDEF FPC}
-{$mode delphi}
+{$mode delphiunicode}
 {$typedAddress on}
 {$ENDIF}
 
@@ -74,7 +74,7 @@ begin
     iSize := MAX_PATH;
     SetLength(Result, iSize);
     SetLastError(0);
-    iResult := GetModuleFileName(HInstance, {$IFDEF FPC}LPCSTR(Result){$ELSE}PChar(Result){$ENDIF}, iSize);
+    iResult := GetModuleFileNameW(HInstance, PWideChar(Result), iSize);
     iError := GetLastError;
     if iResult = 0 then begin
       if iError in [ERROR_SUCCESS, ERROR_MOD_NOT_FOUND] then begin
@@ -91,7 +91,7 @@ begin
     end;
   until iResult < iSize;
 
-  if (CompareStr(Copy(Result, 1, 4), '\\?\') = 0) then
+  if (WideCompareText(Copy(Result, 1, 4), '\\?\') = 0) then
       Result := Copy(Result, 5);
 end {TSpecialFolders.GetModulePathName};
 

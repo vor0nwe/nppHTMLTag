@@ -63,12 +63,14 @@ type
     procedure DoOnShow({%H-}Sender: TObject);
     procedure FormClose({%H-}Sender: TObject);
     procedure GoToChangelog({%H-}Sender: TObject);
+    procedure GoToEntities({%H-}Sender: TObject);
     procedure FollowPath(Sender: TObject);
     procedure ShowLink(Sender: TObject);
     procedure RevertCursor(Sender: TObject);
   private
     FVersion: TFileVersionInfo;
-    FDLLName: string;
+    FDLLName: WideString;
+    FEntities: WideString;
     FDidResize: boolean;
     property DidResize: boolean read FDidResize write FDidResize default False;
     procedure FindEntities;
@@ -104,7 +106,7 @@ begin
     WindowTitle := 'About';
 
     if Assigned(FVersion) then
-      SetWindowTitle('  ' + FVersion.FileDescription);
+      SetWindowTitle('  ' + UTF8Encode(FVersion.FileDescription));
 
     txtPluginVersion := MakeText(UTF8ToAnsi(UTF8Encode(Npp.Version)), 24);
     txtPluginVersion.FontDesc := 'Tahoma-9';
@@ -116,7 +118,7 @@ begin
     if Assigned(FVersion) then
     begin
       txtBugURL := MakeText('Bugs', 24);
-      txtBugURL.Hint := FVersion.Comments;
+      txtBugURL.Hint := UTF8Encode(FVersion.Comments);
       SetUrl(txtBugURL);
     end;
 
@@ -139,7 +141,7 @@ begin
     lblSpacer2 := MakeText(' ', 8);
 
     lblHomeDir := MakeText('Plugin location');
-    txtHomeDir := MakeText(ExtractFileDir(FDLLName), 24);
+    txtHomeDir := MakeText(UTF8ToAnsi(UTF8Encode(ExtractFileDir(FDLLName))), 24);
     WrapFilePath(txtHomeDir);
 
     lblConfigDir := MakeText('Config location');
@@ -203,6 +205,12 @@ begin
   Close;
 end;
 
+procedure TFrmAbout.GoToEntities({%H-}Sender: TObject);
+begin
+  Npp.DoOpen(FEntities);
+  Close;
+end;
+
 procedure TFrmAbout.FollowPath(Sender: TObject);
 begin
   Npp.ShellExecute(PChar(ReplaceStr(TfpgPanel(Sender).Hint, NewLine, '')));
@@ -247,10 +255,10 @@ procedure TFrmAbout.SetConfigFilePath(Path: TfpgPanel);
 begin
   with Path do
   begin
-    if FileExists(Text) then
+    if FileExists(FEntities) then
     begin
-      Hint := Text;
       SetUrl(Path);
+      Path.OnClick := GoToEntities;
       FontDesc := FPG_DEFAULT_FONT_DESC;
     end
     else
@@ -266,19 +274,13 @@ begin
 end;
 
 procedure TFrmAbout.FindEntities;
-var
-  Entities: string;
 begin
-  Entities :=
-    IncludeTrailingPathDelimiter(ReplaceStr(txtConfigDir.Text, NewLine, '')) +
-    EntitiesConf;
+  FEntities := WideFormat('%s%s%s', [Npp.App.ConfigFolder, PathDelim, EntitiesConf]);
 
-  if not FileExists(Entities) then
-    txtEntities.Text :=
-      IncludeTrailingPathDelimiter(ReplaceStr(txtHomeDir.Text, NewLine, '')) +
-      EntitiesConf
-  else
-    txtEntities.Text := Entities;
+  if not FileExists(FEntities) then
+    FEntities := WideFormat('%s%s%s', [ExtractFileDir(FDLLName), PathDelim, EntitiesConf]);
+
+  txtEntities.Text := UTF8Encode(FEntities);
 
   SetConfigFilePath(txtEntities);
   DidResize := ((self.Height > InitFromHeight) or (txtEntities.Height > InitTextHeight));
