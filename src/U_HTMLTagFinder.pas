@@ -383,7 +383,6 @@ begin
     FreeAndNil(NextTag);
   end;
 
-  //MessageBox(npp.WindowHandle, PChar('Current tag: ' + TagName), scPTitle, MB_ICONINFORMATION);
 end;
 
 end.

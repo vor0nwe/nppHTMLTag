@@ -165,7 +165,7 @@ begin
   except
     on E: Exception do
     begin
-      MessageBox(Npp.App.WindowHandle, PChar(E.Message), PChar(E.Message),
+      MessageBoxW(Npp.App.WindowHandle, PWideChar(E.Message), PWideChar(E.Message),
         MB_ICONERROR);
     end;
   end;
@@ -192,12 +192,12 @@ end;
 
 procedure TFrmAbout.GoToChangelog({%H-}Sender: TObject);
 var
-  ChangeLog: string;
+  ChangeLog: WideString;
 begin
   ChangeLog := 'https://bitbucket.org/rdipardo/htmltag/src/HEAD/NEWS.textile';
 
   if Assigned(FVersion) then
-    ChangeLog := Format(
+    ChangeLog := WideFormat(
       'https://bitbucket.org/rdipardo/htmltag/src/v%d.%d.%d/NEWS.textile',
       [FVersion.MajorVersion, FVersion.MinorVersion, FVersion.Revision]);
 

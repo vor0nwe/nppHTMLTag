@@ -36,7 +36,8 @@ type
     procedure commandAbout;
     procedure DoNppnToolbarModification; override;
 
-    procedure ShellExecute(const FullName: string; const Verb: string = 'open'; const WorkingDir: string = ''; const ShowWindow: Integer = SW_SHOWDEFAULT);
+    procedure ShellExecute(const FullName: WideString; const Verb: WideString = 'open'; const WorkingDir: WideString = '';
+      const ShowWindow: Integer = SW_SHOWDEFAULT);
 
     property App: TApplication  read FApp;
     property Version: nppString  read FVersionStr;
@@ -205,7 +206,7 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.DoNppnToolbarModification;
 var
-  Msg: string;
+  Msg: WideString;
 begin
   inherited;
   FApp := GetApplication(@Self.NppData);
@@ -215,11 +216,7 @@ begin
     if not SupportsBigFiles then begin
       Msg := 'The installed version of HTML Tag requires Notepad++ 8.3 or newer.'#13#10
              + 'Plugin commands have been disabled.';
-{$IFDEF FPC}
-      MessageBox(App.WindowHandle, PAnsiChar(Msg), PAnsiChar(UTF8Encode(FVersionStr)), MB_ICONWARNING);
-{$ELSE}
-      MessageBox(App.WindowHandle, PChar(Msg), PChar(FVersionStr), MB_ICONWARNING);
-{$ENDIF}
+      MessageBoxW(App.WindowHandle, PWideChar(Msg), PWideChar(FVersionStr), MB_ICONWARNING);
     end;
   except
     HandleException(ExceptObject, ExceptAddr);
@@ -228,22 +225,22 @@ begin
 end;
 
 { ------------------------------------------------------------------------------------------------ }
-procedure TNppPluginHTMLTag.ShellExecute(const FullName, Verb, WorkingDir: string; const ShowWindow: Integer);
+procedure TNppPluginHTMLTag.ShellExecute(const FullName, Verb, WorkingDir: WideString; const ShowWindow: Integer);
 var
-  SEI: TShellExecuteInfo;
+  SEI: TShellExecuteInfoW;
 begin
-  SEI := Default(TShellExecuteInfo);
+  SEI := Default(TShellExecuteInfoW);
   SEI.cbSize := SizeOf(SEI);
   SEI.Wnd := App.WindowHandle;
-  SEI.lpVerb := PChar(Verb);
-  SEI.lpFile := PChar(FullName);
+  SEI.lpVerb := PWideChar(Verb);
+  SEI.lpFile := PWideChar(FullName);
   SEI.lpParameters := nil;
-  SEI.lpDirectory := PChar(WorkingDir);
+  SEI.lpDirectory := PWideChar(WorkingDir);
   SEI.nShow := ShowWindow;
 {$IFDEF FPC}
-  ShellExecuteEx(LPSHELLEXECUTEINFO(@SEI));
+  ShellExecuteExW(LPSHELLEXECUTEINFOW(@SEI));
 {$ELSE}
-  ShellExecuteEx(@SEI);
+  ShellExecuteExW(@SEI);
 {$ENDIF}
 end;
 

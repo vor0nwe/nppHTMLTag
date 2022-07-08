@@ -43,7 +43,7 @@ var
   Line, Value, Entity: string;
   i, Separation, CodePoint: integer;
   Reading: boolean;
-  ErrMsg: string;
+  ErrMsg: WideString;
 begin
   if not Assigned(EntityLists) then begin
     EntityLists := TStringList.Create;
@@ -55,12 +55,12 @@ begin
     Result := TStringList(EntityLists.Objects[i]);
   end else begin
     IniFile := WideFormat('%s%s', [IncludeTrailingPathDelimiter(GetApplication.ConfigFolder), 'HTMLTag-entities.ini']);
-    ErrMsg := Format('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
+    ErrMsg := WideFormat('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
       IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
-      ErrMsg := Concat(ErrMsg, Format(#13#10'or to'#13#10'%s', [ExtractFileDir(IniFile)]));
+      ErrMsg := Concat(ErrMsg, WideFormat(#13#10'or to'#13#10'%s', [ExtractFileDir(IniFile)]));
     if not FileExists(IniFile) then begin
-      MessageBox(ANpp.WindowHandle, PChar(ErrMsg), PChar('Missing Entities File'), MB_ICONERROR);
+      MessageBoxW(ANpp.WindowHandle, PWideChar(ErrMsg), PWideChar('Missing Entities File'), MB_ICONERROR);
       FreeAndNil(EntityLists);
       Result := nil;
       Exit;
