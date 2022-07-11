@@ -354,7 +354,7 @@ begin
   tr.chrg.cpMin := FStartPos;
   tr.chrg.cpMax := FEndPos;
   tr.lpstrText := PAnsiChar(Chars);
-  System.SetLength(Chars, FEditor.SendMessage(SCI_GETTEXTRANGE, 0, @tr));
+  System.SetLength(Chars, FEditor.SendMessage({$IFDEF SCI_NEXT}SCI_GETTEXTRANGEFULL{$ELSE}SCI_GETTEXTRANGE{$ENDIF}, 0, @tr));
   Result := WideString(Chars);
 end;
 { ------------------------------------------------------------------------------------------------ }
@@ -687,7 +687,7 @@ begin
     TTF.chrg.cpMax := AEndPos;
   TTF.lpstrText := PAnsiChar(UTF8Encode(AText));
   TTF.chrgText := TTF.chrg;
-  StartPos := SendMessage(SCI_FINDTEXT, AOptions, @TTF);
+  StartPos := SendMessage({$IFDEF SCI_NEXT}SCI_FINDTEXTFULL{$ELSE}SCI_FINDTEXT{$ENDIF}, AOptions, @TTF);
   if StartPos = -1 then begin
     ATarget.SetStart(0);
     ATarget.SetEnd(0);
