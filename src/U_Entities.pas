@@ -178,6 +178,7 @@ begin
     Exit;
   end;
 
+  EncodedEntity := '';
   for CharIndex := Length(Text) downto 1 do begin
     EntityIndex := Entities.IndexOfObject(TObject(integer(Ord(Text[CharIndex]))));
     if EntityIndex > -1 then begin

@@ -286,6 +286,7 @@ function TNppPlugin.GetWord: string;
 var
   s: string;
 begin
+  s := '';
   SetLength(s, 800);
   SendMessage(self.NppData.NppHandle, NPPM_GETCURRENTWORD,0,LPARAM(PChar(s)));
   Result := s;
@@ -297,6 +298,7 @@ var
   s: string;
 begin
   // ask if we are not already opened
+  s := '';
   SetLength(s, 500);
   {r := }SendMessage(self.NppData.NppHandle, NPPM_GETFULLCURRENTPATH, 0, LPARAM(PChar(s)));
   SetString(s, PChar(s), strlen(PChar(s)));

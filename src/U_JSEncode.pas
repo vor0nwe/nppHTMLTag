@@ -30,7 +30,6 @@ uses
 { ------------------------------------------------------------------------------------------------ }
 type
   TTextRange = NppSimpleObjects.TTextRange;
-  TConversionMethod = function(var Text: WideString): Integer;
   TRangeConversionMethod = function(const TextRange: TTextRange): Integer;
 
 { ------------------------------------------------------------------------------------------------ }
