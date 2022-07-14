@@ -115,7 +115,7 @@ var
   npp: TApplication;
   doc: TActiveDocument;
   Target, Match: TTextRange;
-  NewStart, NewEnd: Cardinal;
+  NewStart, NewEnd: Sci_Position;
 begin
   Result := 0;
 

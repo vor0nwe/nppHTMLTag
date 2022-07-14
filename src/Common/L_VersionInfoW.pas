@@ -111,12 +111,12 @@ var
   function QueryValue(const AName: string): string;
   var
     Value   : PChar;
+    ValueStr: array[0..$7fff] of char;
   begin
+    Value := @ValueStr;
     SubBlock := WideFormat('\\StringFileInfo\\%.4x%.4x\\%s', [PLang.wLanguage, PLang.wCodePage, AName]);
-    if VerQueryValueW(Buffer, PChar(SubBlock), Pointer(Value), Dummy) then
-      Result := string(Value)
-    else
-      Result := '';
+    VerQueryValueW(Buffer, PChar(SubBlock), Pointer(Value), Dummy);
+    Result := string(Value);
   end;
   { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 var
@@ -124,7 +124,9 @@ var
   FileTime   : TFileTime;
 begin
   FFilename := AFileName;
-
+  PLang := @(Default(TLangAndCP));
+  PInfoBlock := @(Default(VS_FIXEDFILEINFO));
+  SysTime := Default(TSystemTime);
   BufferSize := GetFileVersionInfoSizeW(PChar(AFileName), Dummy);
   FHasVersionInfo := (Buffersize > 0);
   if FHasVersionInfo then begin

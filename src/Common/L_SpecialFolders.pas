@@ -72,6 +72,7 @@ var
 begin
   repeat
     iSize := MAX_PATH;
+    Result := '';
     SetLength(Result, iSize);
     SetLastError(0);
     iResult := GetModuleFileNameW(HInstance, PWideChar(Result), iSize);
