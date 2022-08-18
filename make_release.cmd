@@ -16,8 +16,15 @@ set "SLUGX64_SRC=out\%PLUGIN%_v%VERSION%_x64"
 set "SLUG=%SLUG_SRC%.zip"
 set "SLUGX64=%SLUGX64_SRC%.zip"
 
-del /S /Q /F out\*.zip
-
+del /S /Q /F out\*.zip 2>NUL
+rmdir /S /Q out\obj out\i386-win32\Release out\x86_64-win64\Release 2>NUL
+call %~dp0src\Forms\suppress_ole_init.cmd
+if %errorlevel% NEQ 0 (
+	echo Patch failed
+	exit /B %errorlevel%
+)
+lazbuild -B --bm=Release --cpu=i386 src\prj\HTMLTag.lpi
+lazbuild -B --bm=Release --cpu=x86_64 src\prj\HTMLTag.lpi
 xcopy /DIY *.textile "out\Doc"
 
 :: https://fossil.2of4.net/npp_htmltag/doc/trunk/doc/HTMLTag-readme.txt
