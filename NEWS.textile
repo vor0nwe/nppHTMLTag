@@ -1,5 +1,9 @@
 h2. Changes since v1.1
 
+* 1.3.5 (2022-08-18)
+** Fixed: prevent fpGUI from loading COM libraries that aren't thread safe in the context of DllMain (#4) [2286688]
+** Fixed: resize the About dialog after construction so long file paths are always legible [538d950]
+
 * 1.3.4 (2022-07-15)
 ** Fixed: display all message dialog text as Unicode [86211bd]
 ** Fixed: purge unused type definitions and resolve some compiler warnings [6309167], [794b2a6]

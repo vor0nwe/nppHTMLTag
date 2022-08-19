@@ -35,7 +35,7 @@ You can safely use any 32-bit version of HTML Tag with any 32-bit version of Not
 
 h3. Plugins Admin
 
-A builtin "plugin manager ":pl-admin is available in Notepad++ versions 7.6 and newer.
+A builtin "plugin manager":pl-admin is available in Notepad++ versions 7.6 and newer.
 
 Find _Plugins_ on the main menu bar and select _Plugins Admin_. Check the box beside _HTML Tag_ and click _Install_.
 
