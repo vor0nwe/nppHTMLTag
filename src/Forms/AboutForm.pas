@@ -59,6 +59,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure AfterCreate; override;
   published
     procedure DoOnShow({%H-}Sender: TObject);
     procedure FormClose({%H-}Sender: TObject);
@@ -177,6 +178,12 @@ begin
     FreeAndNil(FVersion);
 
   inherited;
+end;
+
+procedure TFrmAbout.AfterCreate;
+begin
+    inherited;
+    FindEntities;
 end;
 
 procedure TFrmAbout.DoOnShow({%H-}Sender: TObject);
@@ -306,7 +313,7 @@ begin
     else
     begin
       WrapAt := Round(BtnWidth * 0.8);
-      Bump := (Length(Text) div 4);
+      Bump := (Length(Text) div 8);
     end;
 
     if Length(Txt) > WrapAt then
