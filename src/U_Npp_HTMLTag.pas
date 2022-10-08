@@ -126,46 +126,38 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 constructor TNppPluginHTMLTag.Create;
 var
-  sk: TShortcutKey;
+  sk: PShortcutKey;
 begin
   inherited;
 
   self.PluginName := '&HTML Tag';
 
-  sk.IsShift := False; sk.IsCtrl := true; sk.IsAlt := False;
-  sk.Key := 'T'; // Ctrl-T
+  sk := self.MakeShortcutKey(True, False, False, 'T'); // Ctrl-T
   self.AddFuncItem('&Find matching tag', _commandFindMatchingTag, sk);
 
-  sk.IsShift := True; sk.IsCtrl := true; sk.IsAlt := False;
-  sk.Key := 'T'; // Ctrl-Shift-T
+  sk := self.MakeShortcutKey(True, False, True, 'T'); // Ctrl-Shift-T
   self.AddFuncItem('&Select tag and contents', _commandSelectTagContents, sk);
 
-  sk.IsShift := False; sk.IsCtrl := True; sk.IsAlt := True;
-  sk.Key := 'T'; // Ctrl-Alt-T
+  sk := self.MakeShortcutKey(True, True, False, 'T'); // Ctrl-Alt-T
   self.AddFuncItem('Select tag &contents only', _commandSelectTagContentsOnly, sk);
 
   self.AddFuncSeparator;
 
-  sk.IsShift := False; sk.IsCtrl := true; sk.IsAlt := False;
-  sk.Key := 'E'; // Ctrl-E
+  sk := self.MakeShortcutKey(True, False, False, 'E'); // Ctrl-E
   self.AddFuncItem('&Encode entities', _commandEncodeEntities, sk);
 
-  sk.IsShift := False; sk.IsCtrl := True; sk.IsAlt := True;
-  sk.Key := 'E'; // Ctrl-Alt-E
+  sk := self.MakeShortcutKey(True, True, False, 'E'); // Ctrl-Alt-E
   self.AddFuncItem('Encode entities (incl. line &breaks)', _commandEncodeEntitiesInclLineBreaks, sk);
 
-  sk.IsShift := True; sk.IsCtrl := true; sk.IsAlt := False;
-  sk.Key := 'E'; // Ctrl-Shift-E
+  sk := self.MakeShortcutKey(True, False, True, 'E'); // Ctrl-Shift-E
   self.AddFuncItem('&Decode entities', _commandDecodeEntities, sk);
 
   self.AddFuncSeparator;
 
-  sk.IsShift := False; sk.IsCtrl := False; sk.IsAlt := True;
-  sk.Key := 'J'; // Alt-J
+  sk := self.MakeShortcutKey(False, True, False, 'J'); // Alt-J
   self.AddFuncItem('Encode &JS', _commandEncodeJS, sk);
 
-  sk.IsShift := True; sk.IsCtrl := False; sk.IsAlt := True;
-  sk.Key := 'J'; // Alt-Shift-J
+  sk := self.MakeShortcutKey(False, True, True, 'J'); // Alt-Shift-J
   self.AddFuncItem('Dec&ode JS', _commandDecodeJS, sk);
 
   self.AddFuncSeparator;

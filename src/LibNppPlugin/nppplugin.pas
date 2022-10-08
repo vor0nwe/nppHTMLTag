@@ -51,17 +51,12 @@ uses
     function GetPluginsConfigDir: string;
     function AddFuncSeparator: Integer;
     function AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD): Integer; overload;
-    function AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD; ShortcutKey: TShortcutKey): Integer; overload;
-    function AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD; Checked: Boolean): Integer; overload;
-    function AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD; ShortcutKey: TShortcutKey; Checked: Boolean): Integer; overload;
+    function AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD; ShortcutKey: PShortcutKey): Integer; overload;
+    function MakeShortcutKey(const Ctrl, Alt, Shift: Boolean; const AKey: AnsiChar): PShortcutKey;
   public
     NppData: TNppData;
     constructor Create;
     destructor Destroy; override;
-    procedure BeforeDestruction; override;
-
-    function Caption: string;
-
     function CmdIdFromDlgId(DlgId: Integer): Integer;
 
     // needed for DLL export.. wrappers are in the main dll file.
@@ -94,22 +89,6 @@ implementation
 
 { TNppPlugin }
 
-{ This is hacking for troubble...
-  We need to unset the Application handler so that the forms
-  don't get berserk and start throwing OS error 1004.
-  This happens because the main NPP HWND is already lost when the
-  DLL_PROCESS_DETACH gets called, and the form tries to allocate a new
-  handler for sending the "close" windows message...
-}
-procedure TNppPlugin.BeforeDestruction;
-begin
-  {$IFDEF NPPFORMS}
-  Application.Handle := 0;
-  Application.Terminate;
-  {$ENDIF}
-  inherited;
-end;
-
 constructor TNppPlugin.Create;
 begin
   inherited;
@@ -133,42 +112,33 @@ var
   i: Integer;
 begin
   i := Length(self.FuncArray);
-  SetLength(Self.FuncArray,i+1);
-{$IFDEF NPPUNICODE}
-  StringToWideChar(UTF8Encode(Name), self.FuncArray[i].ItemName, FuncItemNameLen); // @todo: change to constant
-{$ELSE}
-  StrCopy(self.FuncArray[i].ItemName, PChar(Name));
-{$ENDIF}
+  SetLength(self.FuncArray, i + 1);
+  StrPLCopy(self.FuncArray[i].ItemName, Name, 1000);
   self.FuncArray[i].Func := Func;
   self.FuncArray[i].ShortcutKey := nil;
   Result := i;
 end;
 
 function TNppPlugin.AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD;
-  ShortcutKey: TShortcutKey): Integer;
+  ShortcutKey: PShortcutKey): Integer;
 var
   i: Integer;
 begin
   i := self.AddFuncItem(Name, Func);
-  New(self.FuncArray[i].ShortcutKey);
-  self.FuncArray[i].ShortcutKey.IsCtrl := ShortcutKey.IsCtrl;
-  self.FuncArray[i].ShortcutKey.IsAlt := ShortcutKey.IsAlt;
-  self.FuncArray[i].ShortcutKey.IsShift := ShortcutKey.IsShift;
-  self.FuncArray[i].ShortcutKey.Key := ShortcutKey.Key; // need widechar ??
+  self.FuncArray[i].ShortcutKey := ShortcutKey;
   Result := i;
 end;
 
-function TNppPlugin.AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD; Checked: Boolean): Integer;
+function TNppPlugin.MakeShortcutKey(const Ctrl, Alt, Shift: Boolean; const AKey: AnsiChar): PShortcutKey;
 begin
-  Result := AddFuncItem(Name, Func);
-  self.FuncArray[Result].Checked := Checked;
-end;
-
-function TNppPlugin.AddFuncItem(Name: nppString; Func: PFUNCPLUGINCMD; ShortcutKey: TShortcutKey;
-  Checked: Boolean): Integer;
-begin
-  Result := AddFuncItem(Name, Func, ShortcutKey);
-  self.FuncArray[Result].Checked := Checked;
+  Result := New(PShortcutKey);
+  with Result^ do
+  begin
+    IsCtrl := Ctrl;
+    IsAlt := Alt;
+    IsShift := Shift;
+    Key := AKey;
+  end;
 end;
 
 function TNppPlugin.AddFuncSeparator: Integer;
@@ -228,7 +198,6 @@ begin
         end;
         NPPN_FILEBEFORECLOSE: begin
           FClosingBufferID := SendMessage(HWND(sn.nmhdr.hwndFrom), NPPM_GETCURRENTBUFFERID, 0, 0);
-  //        self.DoNppnBeforeFileClose(FClosingBufferID);
         end;
         NPPN_FILECLOSED: begin
           self.DoNppnFileClosed(FClosingBufferID);
@@ -244,81 +213,24 @@ begin
         end;
       end;
     end;
-    // @todo
   except
     on E: Exception do begin
-    {$ifdef FPC}
       OutputDebugString(PAnsiChar(UTF8Encode(WideFormat('%s> %s: "%s"', [PluginName, E.ClassName, E.Message]))));
-    {$Else}
-      OutputDebugString(PChar(Format('%s> %s: "%s"', [PluginName, E.ClassName, E.Message])));
-      {$endif}
     end;
   end;
 end;
 
+{$REGION 'Overrides'}
 procedure TNppPlugin.MessageProc(var Msg: TMessage);
-//var
-//  hm: HMENU;
-//  i: integer;
 begin
-//  if (Msg.Msg = WM_CREATE) then
-//  begin
-//    // Change - to separator items
-//    hm := GetMenu(self.NppData.NppHandle);
-//    for i:=0 to Length(self.FuncArray)-1 do
-//      if (self.FuncArray[i].ItemName[0] = '-') then
-//        ModifyMenu(hm, self.FuncArray[i].CmdID, MF_BYCOMMAND or MF_SEPARATOR, 0, nil);
-//  end;
   Dispatch(Msg);
 end;
 
 procedure TNppPlugin.SetInfo(NppData: TNppData);
 begin
   self.NppData := NppData;
-  {$IFDEF NPPFORMS}
-  Application.Handle := NppData.NppHandle;
-  {$ENDIF}
 end;
 
-// utils
-
-function TNppPlugin.GetWord: string;
-var
-  s: string;
-begin
-  s := '';
-  SetLength(s, 800);
-  SendMessage(self.NppData.NppHandle, NPPM_GETCURRENTWORD,0,LPARAM(PChar(s)));
-  Result := s;
-end;
-
-function TNppPlugin.DoOpen(filename: String): boolean;
-var
-  r: integer;
-  s: string;
-begin
-  // ask if we are not already opened
-  s := '';
-  SetLength(s, 500);
-  {r := }SendMessage(self.NppData.NppHandle, NPPM_GETFULLCURRENTPATH, 0, LPARAM(PChar(s)));
-  SetString(s, PChar(s), strlen(PChar(s)));
-  Result := true;
-  if (s = filename) then exit;
-  r := SendMessage(self.NppData.NppHandle, WM_DOOPEN, 0, LPARAM(PChar(filename)));
-  Result := (r<>0);
-end;
-
-function TNppPlugin.DoOpen(filename: String; Line: Sci_Position): boolean;
-var
-  r: boolean;
-begin
-  r := self.DoOpen(filename);
-  if (r) then
-    SendMessage(self.NppData.nppScintillaMainHandle, SCI_GOTOLINE, Line,0);
-  Result := r;
-end;
-
-// overrides
 procedure TNppPlugin.DoNppnShutdown;
 begin
   // override these
@@ -348,15 +260,45 @@ procedure TNppPlugin.DoUpdateUI(const hwnd: HWND; const updated: Integer);
 begin
   // override these
 end;
+{$ENDREGION}
 
-
-function TNppPlugin.Caption: string;
+function TNppPlugin.GetWord: string;
+var
+  s: string;
 begin
-{$ifDEF fpc}
-  Result := UTF8Decode(StringReplace(UTF8Encode(Self.PluginName), '&', '', []));
-{$ELSE}
-  Result := StringReplace(Self.PluginName, '&', '', []);
-{$ENDIF}
+  s := '';
+  SetLength(s, 800);
+  SendMessage(self.NppData.NppHandle, NPPM_GETCURRENTWORD, 0, LPARAM(PChar(s)));
+  Result := s;
+end;
+
+function TNppPlugin.DoOpen(filename: String): Boolean;
+var
+  r: Integer;
+  s: string;
+begin
+  // ask if we are not already opened
+  s := '';
+  SetLength(s, 500);
+  r := SendMessage(self.NppData.NppHandle, NPPM_GETFULLCURRENTPATH, 0,
+    LPARAM(PChar(s)));
+  SetString(s, PChar(s), StrLen(PChar(s)));
+  Result := true;
+  if (s = filename) then
+    exit;
+  r := SendMessage(self.NppData.NppHandle, WM_DOOPEN, 0,
+    LPARAM(PChar(filename)));
+  Result := (r = 0);
+end;
+
+function TNppPlugin.DoOpen(filename: String; Line: Sci_Position): Boolean;
+var
+  r: Boolean;
+begin
+  r := self.DoOpen(filename);
+  if (r) then
+    SendMessage(self.NppData.nppScintillaMainHandle, SCI_GOTOLINE, Line, 0);
+  Result := r;
 end;
 
 function TNppPlugin.CmdIdFromDlgId(DlgId: Integer): Integer;
