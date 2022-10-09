@@ -13,6 +13,8 @@ interface
   uses
     Classes, Windows, NppPlugin;
 
+{$I '..\Include\SciApi.inc'}
+
   type
 
 {$IFDEF DELPHI}
@@ -114,6 +116,8 @@ interface
       protected
         FWindowHandle: THandle;
         FIsNpp: boolean;
+        FSciApiLevel: TSciApiLevel;
+        procedure SetApiLevel(Api: TSciApiLevel); virtual;
       public
         constructor Create(AWindowHandle: THandle; ANppWindow: boolean = False);
 
@@ -121,6 +125,7 @@ interface
         function SendMessage(const Message: UINT; wParam: WPARAM; lParam: Pointer): LRESULT; overload; virtual;
         procedure PostMessage(const Message: UINT; wParam: WPARAM = 0; lParam: NativeUInt = 0); overload; virtual;
         procedure PostMessage(const Message: UINT; wParam: WPARAM; lParam: Pointer); overload; virtual;
+        property ApiLevel: TSciApiLevel read FSciApiLevel write SetApiLevel;
     end;
 
     { -------------------------------------------------------------------------------------------- }
@@ -216,6 +221,8 @@ interface
         function  GetPath(): WideString;
         function  GetDocument(): TActiveDocument;
         function  GetConfigFolder(): nppString;
+      protected
+        procedure SetApiLevel(Api: TSciApiLevel); override;
       public
         constructor Create(const ANppData: PNppData);
         destructor  Destroy(); override;
@@ -232,13 +239,14 @@ interface
     end;
 {$IFDEF DELPHI}{$METHODINFO OFF}{$ENDIF}
 
-    function GetApplication(const ANPPData: PNPPData = nil): TApplication;
+    function GetApplication(const ANPPData: PNPPData = nil): TApplication; overload;
+    function GetApplication(const ANPPData: PNPPData; Api: TSciApiLevel): TApplication; overload;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
 
 uses
-  {$IFDEF SCI_5}Math,{$ENDIF}
+  {$IFDEF CPUx64}Math,{$ENDIF}
   SysUtils;
 
 var
@@ -252,6 +260,13 @@ function GetApplication(const ANPPData: PNPPData = nil): TApplication;
 begin
   if not Assigned(Application) and Assigned(ANPPData) then
     Application := TApplication.Create(ANPPData);
+  Result := Application;
+end;
+
+function GetApplication(const ANPPData: PNPPData; Api: TSciApiLevel): TApplication;
+begin
+  Application := GetApplication(ANPPData);
+  Application.ApiLevel := Api;
   Result := Application;
 end;
 
@@ -347,14 +362,21 @@ end;
 
 function TTextRange.GetText: WideString;
 var
+  SciMsg: UINT;
   tr: RSciTextRange;
   Chars: AnsiString;
 begin
+  case FEditor.ApiLevel of
+    sciApi_GTE_523:
+      SciMsg := SCI_GETTEXTRANGEFULL;
+    else
+      SciMsg := SCI_GETTEXTRANGE;
+  end;
   Chars := AnsiString(StringOfChar(#0, GetLength + 1));
   tr.chrg.cpMin := FStartPos;
   tr.chrg.cpMax := FEndPos;
   tr.lpstrText := PAnsiChar(Chars);
-  System.SetLength(Chars, FEditor.SendMessage({$IFDEF SCI_NEXT}SCI_GETTEXTRANGEFULL{$ELSE}SCI_GETTEXTRANGE{$ENDIF}, 0, @tr));
+  System.SetLength(Chars, FEditor.SendMessage(SciMsg, 0, @tr));
   Result := WideString(Chars);
 end;
 { ------------------------------------------------------------------------------------------------ }
@@ -583,6 +605,7 @@ constructor TWindowedObject.Create(AWindowHandle: THandle; ANppWindow: boolean);
 begin
   FWindowHandle := AWindowHandle;
   FIsNpp := ANppWindow;
+  FSciApiLevel := Default(TSciApiLevel);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -646,9 +669,14 @@ begin
     end;
   end;
 end;
+{ ------------------------------------------------------------------------------------------------ }
+procedure TWindowedObject.SetApiLevel(Api: TSciApiLevel);
+begin
+    FSciApiLevel := Api;
+end;
 
 { ================================================================================================ }
-{ TEditor }
+{ TActiveDocument }
 
 destructor TActiveDocument.Destroy;
 begin
@@ -902,12 +930,13 @@ function TActiveDocument.GetText: WideString;
 var
   Chars: AnsiString;
   Len: Sci_PositionU;
-  {$IF DEFINED(SCI_5) AND DEFINED(FPC) AND DEFINED(CPUx64)}
+  {$IF DEFINED(FPC) AND DEFINED(CPUx64)}
   SafeLen, SafeDocLen: Extended;
   {$ENDIF}
 begin
   Len := SendMessage(SCI_GETTEXT, WPARAM(High(Sci_PositionU)) - 1, nil);
-{$IFDEF SCI_5}
+  if Self.ApiLevel >= sciApi_GTE_515 then
+  begin
 {$IFNDEF FPC}
   Len := Round(MinValue([Len + 1, SendMessage(SCI_GETLENGTH)]));
 {$ELSE}
@@ -919,7 +948,7 @@ begin
   Inc(Len);
 {$ENDIF}
 {$ENDIF}
-{$ENDIF}
+  end;
   Chars := EmptyStr;
   SetLength(Chars, Len);
   SendMessage(SCI_GETTEXT, Len, PAnsiChar(Chars));
@@ -1031,8 +1060,17 @@ begin
   Result := nppString(Path);
 end;
 
+{ ------------------------------------------------------------------------------------------------ }
 
+procedure TApplication.SetApiLevel(Api: TSciApiLevel);
+var i: Cardinal;
+begin
+  for i := 0 to FEditors.Count - 1 do begin
+    FEditors[i].FSciApiLevel := Api
+  end;
 
+  inherited SetApiLevel(Api);
+end;
 
 { ------------------------------------------------------------------------------------------------ }
 { TTextRangeMark }

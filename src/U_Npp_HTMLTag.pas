@@ -201,7 +201,7 @@ var
   Msg: WideString;
 begin
   inherited;
-  FApp := GetApplication(@Self.NppData);
+  FApp := GetApplication(@Self.NppData, NppSimpleObjects.TSciApiLevel(Self.GetApiLevel));
 
 {$IFDEF CPUX64}
   try

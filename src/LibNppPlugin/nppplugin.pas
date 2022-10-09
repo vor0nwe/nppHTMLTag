@@ -37,6 +37,7 @@ uses
   Windows,Messages,SysUtils;
 
 {$I '..\Include\SciSupport.inc'}
+{$I '..\Include\SciApi.inc'}
 {$I '..\Include\Npp.inc'}
 
   TNppPlugin = class(TObject)
@@ -47,6 +48,9 @@ uses
   protected
     PluginName: nppString;
     function SupportsBigFiles: Boolean;
+    function HasV5Apis: Boolean;
+    function HasFullRangeApis: Boolean;
+    function GetApiLevel: TSciApiLevel;
     function GetNppVersion: Cardinal;
     function GetPluginsConfigDir: string;
     function AddFuncSeparator: Integer;
@@ -306,6 +310,16 @@ begin
   Result := self.FuncArray[DlgId].CmdId;
 end;
 
+function TNppPlugin.GetApiLevel: TSciApiLevel;
+begin
+  if (not self.HasV5Apis) then
+    Result := sciApi_LT_5
+  else if (not self.HasFullRangeApis) then
+    Result := sciApi_GTE_515
+  else
+    Result := sciApi_GTE_523;
+end;
+
 function TNppPlugin.GetNppVersion: Cardinal;
 var
   NppVersion: Cardinal;
@@ -334,6 +348,29 @@ begin
       ((LOWORD(NppVersion) in [3, 4]) or
        // Also check for N++ versions 8.1.9.1, 8.1.9.2 and 8.1.9.3
        ((LOWORD(NppVersion) > 21) and (not (LOWORD(NppVersion) in [191, 192, 193])))));
+end;
+
+function TNppPlugin.HasV5Apis: Boolean;
+var
+  NppVersion: Cardinal;
+begin
+  NppVersion := GetNppVersion;
+  Result :=
+    (HIWORD(NppVersion) > 8) or
+    ((HIWORD(NppVersion) = 8) and
+        ((LOWORD(NppVersion) >= 4) and
+           (not (LOWORD(NppVersion) in [11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 31, 32, 33, 191, 192, 193]))));
+end;
+
+function TNppPlugin.HasFullRangeApis: Boolean;
+var
+  NppVersion: Cardinal;
+begin
+  NppVersion := GetNppVersion;
+  Result :=
+    (HIWORD(NppVersion) > 8) or
+    ((HIWORD(NppVersion) = 8) and
+       ((LOWORD(NppVersion) >= 43) and (not (LOWORD(NppVersion) in [191, 192, 193]))));
 end;
 
 end.
