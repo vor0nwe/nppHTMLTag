@@ -82,7 +82,7 @@ begin
   ClosureFound := False;
   StartIndex := 0;
   EndIndex := 0;
-  ATagName := UTF8Encode(Result.Text);
+  ATagName := Result.Text;
   ExtraChar := #0;
   for i := 2 to Length(ATagName) - 1 do begin
     // Exit early when it's obviously a self-closing tag

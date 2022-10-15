@@ -4,6 +4,8 @@ interface
   uses
     Classes, Windows, SciSupport, NppPlugin;
 
+{$I '..\lib\SciApi.inc'}
+
   type
 
 {$IFDEF DELPHI}
@@ -105,6 +107,8 @@ interface
       protected
         FWindowHandle: THandle;
         FIsNpp: boolean;
+        FSciApiLevel: TSciApiLevel;
+        procedure SetApiLevel(Api: TSciApiLevel); virtual;
       public
         constructor Create(AWindowHandle: THandle; ANppWindow: boolean = False);
 
@@ -112,6 +116,7 @@ interface
         function SendMessage(const Message: UINT; wParam: WPARAM; lParam: Pointer): LRESULT; overload; virtual;
         procedure PostMessage(const Message: UINT; wParam: WPARAM = 0; lParam: NativeUInt = 0); overload; virtual;
         procedure PostMessage(const Message: UINT; wParam: WPARAM; lParam: Pointer); overload; virtual;
+        property ApiLevel: TSciApiLevel read FSciApiLevel write SetApiLevel;
     end;
 
     { -------------------------------------------------------------------------------------------- }
@@ -233,12 +238,13 @@ interface
         function  GetPath(): WideString;
         function  GetDocument(): TActiveDocument;
         function  GetConfigFolder(): nppString;
+      protected
+        procedure SetApiLevel(Api: TSciApiLevel); override;
       public
         constructor Create(const ANppData: PNppData);
         destructor  Destroy(); override;
 
         procedure DoMenuCommand(const CommandID: Integer);
-        function  SendMessageToPlugin(const PluginFilename: nppString; const Message: Cardinal; const Info: Pointer): Pointer;
 
         property WindowHandle: THandle            read FWindowHandle;
         property Path: WideString                 read GetPath;
@@ -251,13 +257,14 @@ interface
     end;
 {$IFDEF DELPHI}{$METHODINFO OFF}{$ENDIF}
 
-    function GetApplication(const ANPPData: PNPPData = nil): TApplication;
+    function GetApplication(const ANPPData: PNPPData = nil): TApplication; overload;
+    function GetApplication(const ANPPData: PNPPData; Api: TSciApiLevel): TApplication; overload;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
 
 uses
-  {$IFDEF SCI_5}Math,{$ENDIF}
+  Math,
   SysUtils;
 
 var
@@ -271,6 +278,13 @@ function GetApplication(const ANPPData: PNPPData = nil): TApplication;
 begin
   if not Assigned(Application) and Assigned(ANPPData) then
     Application := TApplication.Create(ANPPData);
+  Result := Application;
+end;
+
+function GetApplication(const ANPPData: PNPPData; Api: TSciApiLevel): TApplication;
+begin
+  Application := GetApplication(ANPPData);
+  Application.ApiLevel := Api;
   Result := Application;
 end;
 
@@ -366,14 +380,21 @@ end;
 
 function TTextRange.GetText: WideString;
 var
+  SciMsg: UINT;
   tr: RSciTextRange;
   Chars: AnsiString;
 begin
+  case FEditor.ApiLevel of
+    sciApi_GTE_523:
+      SciMsg := SCI_GETTEXTRANGEFULL;
+    else
+      SciMsg := SCI_GETTEXTRANGE;
+  end;
   Chars := AnsiString(StringOfChar(#0, GetLength + 1));
   tr.chrg.cpMin := FStartPos;
   tr.chrg.cpMax := FEndPos;
   tr.lpstrText := PAnsiChar(Chars);
-  System.SetLength(Chars, FEditor.SendMessage(SCI_GETTEXTRANGE, 0, @tr));
+  System.SetLength(Chars, FEditor.SendMessage(SciMsg, 0, @tr));
   Result := WideString(Chars);
 end;
 { ------------------------------------------------------------------------------------------------ }
@@ -386,7 +407,7 @@ begin
   SC_CP_UTF8:
     Chars := UTF8Encode(AValue)
   else
-    Chars := AValue;
+    Chars := RawByteString(AValue);
   end;
   TxtRng := System.Length(Chars);
   FEditor.SendMessage(SCI_SETTARGETSTART, FStartPos);
@@ -582,7 +603,7 @@ begin
   SC_CP_UTF8:
     Chars := UTF8Encode(AValue)
   else
-    Chars := AValue;
+    Chars := RawByteString(AValue);
   end;
   NewLength := System.Length(Chars) - 1;
   Reversed := (Self.Anchor > Self.GetCurrentPos);
@@ -602,6 +623,7 @@ constructor TWindowedObject.Create(AWindowHandle: THandle; ANppWindow: boolean);
 begin
   FWindowHandle := AWindowHandle;
   FIsNpp := ANppWindow;
+  FSciApiLevel := Default(TSciApiLevel);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -650,7 +672,6 @@ begin
     SCI_SETTABWIDTH: Result := 'SCI_SETTABWIDTH';
     SCI_GETTABWIDTH: Result := 'SCI_GETTABWIDTH';
     SCI_SETCODEPAGE: Result := 'SCI_SETCODEPAGE';
-    SCI_SETUSEPALETTE: Result := 'SCI_SETUSEPALETTE';
     SCI_MARKERDEFINE: Result := 'SCI_MARKERDEFINE';
     SCI_MARKERSETFORE: Result := 'SCI_MARKERSETFORE';
     SCI_MARKERSETBACK: Result := 'SCI_MARKERSETBACK';
@@ -776,7 +797,6 @@ begin
     SCI_GETLINEENDPOSITION: Result := 'SCI_GETLINEENDPOSITION';
     SCI_GETCODEPAGE: Result := 'SCI_GETCODEPAGE';
     SCI_GETCARETFORE: Result := 'SCI_GETCARETFORE';
-    SCI_GETUSEPALETTE: Result := 'SCI_GETUSEPALETTE';
     SCI_GETREADONLY: Result := 'SCI_GETREADONLY';
     SCI_SETCURRENTPOS: Result := 'SCI_SETCURRENTPOS';
     SCI_SETSELECTIONSTART: Result := 'SCI_SETSELECTIONSTART';
@@ -1060,13 +1080,10 @@ begin
     SCI_GETCARETLINEBACKALPHA: Result := 'SCI_GETCARETLINEBACKALPHA';
     SCI_STARTRECORD: Result := 'SCI_STARTRECORD';
     SCI_STOPRECORD: Result := 'SCI_STOPRECORD';
-    SCI_SETLEXER: Result := 'SCI_SETLEXER';
     SCI_GETLEXER: Result := 'SCI_GETLEXER';
     SCI_COLOURISE: Result := 'SCI_COLOURISE';
     SCI_SETPROPERTY: Result := 'SCI_SETPROPERTY';
     SCI_SETKEYWORDS: Result := 'SCI_SETKEYWORDS';
-    SCI_SETLEXERLANGUAGE: Result := 'SCI_SETLEXERLANGUAGE';
-    SCI_LOADLEXERLIBRARY: Result := 'SCI_LOADLEXERLIBRARY';
     SCI_GETPROPERTY: Result := 'SCI_GETPROPERTY';
     SCI_GETPROPERTYEXPANDED: Result := 'SCI_GETPROPERTYEXPANDED';
     SCI_GETPROPERTYINT: Result := 'SCI_GETPROPERTYINT';
@@ -1211,9 +1228,14 @@ begin
     end;
   end;
 end;
+{ ------------------------------------------------------------------------------------------------ }
+procedure TWindowedObject.SetApiLevel(Api: TSciApiLevel);
+begin
+    FSciApiLevel := Api;
+end;
 
 { ================================================================================================ }
-{ TEditor }
+{ TActiveDocument }
 
 destructor TActiveDocument.Destroy;
 begin
@@ -1227,7 +1249,7 @@ end;
 
 procedure TActiveDocument.Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer);
 begin
-  if Assigned(ATarget) then 
+  if Assigned(ATarget) then
   begin
     if AOptions <> 0 then
       Find(AText, ATarget, AOptions, ATarget.StartPos, ATarget.EndPos)
@@ -1255,10 +1277,10 @@ begin
   StartPos := SendMessage(SCI_FINDTEXT, AOptions, @TTF);
   if StartPos = -1 then begin
     ATarget.SetStart(0);
-    ATarget.SetEnd(0);    
+    ATarget.SetEnd(0);
   end else begin
     ATarget.SetStart(TTF.chrgText.cpMin);
-    ATarget.SetEnd(TTF.chrgText.cpMax);        
+    ATarget.SetEnd(TTF.chrgText.cpMax);
   end;
 end;
 
@@ -1495,11 +1517,26 @@ function TActiveDocument.GetText: WideString;
 var
   Chars: AnsiString;
   Len: Sci_PositionU;
+  {$IF DEFINED(FPC) AND DEFINED(CPUx64)}
+  SafeLen, SafeDocLen: Extended;
+  {$ENDIF}
 begin
   Len := SendMessage(SCI_GETTEXT, WPARAM(High(Sci_PositionU)) - 1, nil);
-{$IFDEF SCI_5}
+  if Self.ApiLevel >= sciApi_GTE_515 then
+  begin
+{$IFNDEF FPC}
   Len := Round(MinValue([Len + 1, SendMessage(SCI_GETLENGTH)]));
+{$ELSE}
+{$IFDEF CPUx64}
+  SafeLen := Len + 1.0;
+  SafeDocLen := SendMessage(SCI_GETLENGTH) * 1.0;
+  Len := Round(MinValue([SafeLen, SafeDocLen]));
+{$ELSE}
+  Inc(Len);
 {$ENDIF}
+{$ENDIF}
+  end;
+  Chars := EmptyStr;
   SetLength(Chars, Len);
   SendMessage(SCI_GETTEXT, Len, PAnsiChar(Chars));
   Result := WideString(Chars);
@@ -1540,7 +1577,7 @@ begin
   SC_CP_UTF8:
     Chars := UTF8Encode(AValue)
   else
-    Chars := AValue;
+    Chars := RawByteString(AValue);
   end;
   SendMessage(SCI_SETTEXT, 0, PAnsiChar(Chars));
 end;
@@ -1656,22 +1693,15 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-function TApplication.SendMessageToPlugin(const PluginFilename: nppString; const Message: Cardinal;
-                                          const Info: Pointer): Pointer;
-//var
-//  CommInfo: TNppCommunicationInfo;
+procedure TApplication.SetApiLevel(Api: TSciApiLevel);
+var i: Cardinal;
 begin
-  Result := nil;
-//  CommInfo.internalMsg := Message;
-//  CommInfo.srcModuleName := PNppChar(DllName);
-//  CommInfo.info := Info;
-//  if not SendMessage(NPPM_MSGTOPLUGIN, PNppChar(PluginFilename), @CommInfo) then begin
-//    raise Exception.CreateFmt('Plugin "%s" not found!', [PluginFilename]);
-//  end;
-//  Result := CommInfo.info;
+  for i := 0 to FEditors.Count - 1 do begin
+    FEditors[i].FSciApiLevel := Api
+  end;
+
+  inherited SetApiLevel(Api);
 end;
-
-
 
 { ------------------------------------------------------------------------------------------------ }
 { TTextRangeMark }
