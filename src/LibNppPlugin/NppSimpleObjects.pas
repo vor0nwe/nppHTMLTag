@@ -1260,9 +1260,16 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TActiveDocument.Find(const AText: WideString; var ATarget: TTextRange; const AOptions: integer; const AStartPos, AEndPos: Sci_Position);
 var
+  SciMsg: UINT;
   TTF: RSciTextToFind;
   StartPos: LRESULT;
 begin
+  case Self.ApiLevel of
+    sciApi_GTE_523:
+      SciMsg := SCI_FINDTEXTFULL;
+    else
+      SciMsg := SCI_FINDTEXT;
+  end;
   TTF := Default(RSciTextToFind);
   if AStartPos < 0 then
     TTF.chrg.cpMin := 0
@@ -1274,7 +1281,7 @@ begin
     TTF.chrg.cpMax := AEndPos;
   TTF.lpstrText := PAnsiChar(UTF8Encode(AText));
   TTF.chrgText := TTF.chrg;
-  StartPos := SendMessage(SCI_FINDTEXT, AOptions, @TTF);
+  StartPos := SendMessage(SciMsg, AOptions, @TTF);
   if StartPos = -1 then begin
     ATarget.SetStart(0);
     ATarget.SetEnd(0);
