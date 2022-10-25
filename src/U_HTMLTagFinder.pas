@@ -338,22 +338,12 @@ begin
             end;
           end else begin
             MatchingTag.Select;
-            {$IFNDEF NPPUNICODE} // NPP Unicode has always done this itself
-            if HIWORD(npp.SendMessage(NPPM_GETNPPVERSION)) < 5 then begin
-              Tag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
-              MatchingTag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
-            end;
-            {$ENDIF}
           end;
         end else begin
           if ASelect then begin
             MatchingTag.Select;
           end else begin
             MatchingTag.Select;
-            {$IFNDEF NPPUNICODE} // NPP Unicode has always done this itself
-            if HIWORD(npp.SendMessage(NPPM_GETNPPVERSION)) < 5 then
-              MatchingTag.Mark(STYLE_BRACELIGHT, 255, ncHighlightTimeout);
-            {$ENDIF}
           end;
         end;
       end else if Tags.Count > 0 then begin
@@ -362,7 +352,7 @@ begin
         if ASelect then begin
           Tag.Select;
         end;
-        Tag.Mark(STYLE_BRACEBAD, 255, ncHighlightTimeout);
+        Tag.Mark(STYLE_BRACEBAD, ncHighlightTimeout);
       end else begin
         MessageBeep(MB_ICONWARNING);
       end;

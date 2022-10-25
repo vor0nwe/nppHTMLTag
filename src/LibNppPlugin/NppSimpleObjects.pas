@@ -58,7 +58,7 @@ interface
 
         procedure Select();
         procedure Indent(const Levels: integer = 1);
-        procedure Mark(const Style: integer; const Mask: integer = 0; const DurationInMs: cardinal = 0);
+        procedure Mark(const Style: integer; const DurationInMs: cardinal = 0);
 
         property Document: TActiveDocument  read FEditor;
         property StartPos: Sci_Position     read FStartPos        write SetStart;
@@ -451,30 +451,14 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 
-procedure TTextRange.Mark(const Style, Mask: integer; const DurationInMs: cardinal);
+procedure TTextRange.Mark(const Style: integer; const DurationInMs: cardinal);
 var
   CurrentStyleEnd: Sci_Position;
-  StyleBits: integer;
 begin
   CurrentStyleEnd := FEditor.SendMessage(SCI_GETENDSTYLED);
-  {
-    Per https://www.scintilla.org/ScintillaDoc.html#SCI_GETSTYLEBITS:
-
-    "The following are features that should be removed from calling code but are
-    still defined to avoid breaking callers.
-
-    "Scintilla no longer supports style byte indicators. The last version to
-    support style byte indicators was 3.4.2. Any use of these symbols should be
-    removed and replaced with standard indicators <https://www.scintilla.org/ScintillaDoc.html#Indicators>"
-  }
-  StyleBits := FEditor.SendMessage(SCI_GETSTYLEBITS);
-  if Mask = 0 then begin
-    FEditor.SendMessage(SCI_STARTSTYLING, FStartPos, StyleBits);
-  end else begin
-    FEditor.SendMessage(SCI_STARTSTYLING, FStartPos, Mask);
-  end;
+  FEditor.SendMessage(SCI_STARTSTYLING, FStartPos, 0);
   FEditor.SendMessage(SCI_SETSTYLING, GetLength, Style);
-  FEditor.SendMessage(SCI_STARTSTYLING, CurrentStyleEnd, StyleBits);
+  FEditor.SendMessage(SCI_STARTSTYLING, CurrentStyleEnd, 0);
 
   if DurationInMs > 0 then
     TimedTextRangeMarks.Add(TTextRangeMark.Create(Self, DurationInMs));
@@ -1103,7 +1087,7 @@ begin
       CurrentStyleEnd := Editor.SendMessage(SCI_GETENDSTYLED);
       if FStartPos < CurrentStyleEnd then
         CurrentStyleEnd := FStartPos;
-      Editor.SendMessage(SCI_STARTSTYLING, CurrentStyleEnd, Editor.SendMessage(SCI_GETSTYLEBITS));
+      Editor.SendMessage(SCI_STARTSTYLING, CurrentStyleEnd, 0);
     except
       on E: Exception do begin
         // ignore
