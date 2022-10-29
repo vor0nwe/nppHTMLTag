@@ -403,15 +403,9 @@ const
 
 
 type
-{$IFDEF NPPUNICODE}
   nppString = UnicodeString;
   nppChar = WChar;
   nppPChar = PWChar;
-{$ELSE}
-  nppString = AnsiString;
-  nppChar = AnsiChar;
-  nppPChar = PAnsiChar;
-{$ENDIF}
 
   LangType = (L_TXT = 0, L_PHP , L_C, L_CPP, L_CS, L_OBJC, L_JAVA, L_RC,
     L_HTML, L_XML, L_MAKEFILE, L_PASCAL, L_BATCH, L_INI, L_NFO, L_USER,

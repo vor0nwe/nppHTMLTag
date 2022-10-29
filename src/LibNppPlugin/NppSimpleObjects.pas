@@ -467,12 +467,8 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TTextRange.Select;
 begin
-  {$IFDEF NPPUNICODE}
   FEditor.SendMessage(SCI_SETSELECTION, FEndPos, FStartPos);
   FEditor.SendMessage(SCI_SCROLLCARET);
-  {$ELSE}
-  FEditor.SendMessage(SCI_SETSEL, FStartPos, FEndPos);
-  {$ENDIF}
 end;
 
 { ================================================================================================ }

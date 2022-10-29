@@ -69,13 +69,11 @@
           </Linking>
           <Other>
             <CustomOptions Value="-dUNICODE
--dNPPUNICODE
 -dSCI_DISABLE_PROVISIONAL
 -FcUTF8
 -vm2026,4104,5024"/>
             <OtherDefines Count="2">
               <Define0 Value="UNICODE"/>
-              <Define1 Value="NPPUNICODE"/>
             </OtherDefines>
             <ExecuteAfter>
               <Command Value="&quot;C:\Users\Rob\scoop\apps\upx\current\upx.exe&quot; --best -q &quot;$TargetFile()&quot;"/>
@@ -177,7 +175,6 @@
     </Linking>
     <Other>
       <CustomOptions Value="-dUNICODE
--dNPPUNICODE
 -FcUTF8
 -dSCI_DISABLE_PROVISIONAL
 -WN
