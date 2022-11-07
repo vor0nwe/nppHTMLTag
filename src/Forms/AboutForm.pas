@@ -73,12 +73,15 @@ type
     FDLLName: WideString;
     FEntities: WideString;
     FDidResize: boolean;
+    FDidStyleChange: boolean;
     property DidResize: boolean read FDidResize write FDidResize default False;
     procedure FindEntities;
     procedure SetConfigFilePath(Path: TfpgPanel);
     procedure WrapFilePath(Path: TfpgPanel);
     procedure SetUrl(Lbl: TfpgPanel);
     function MakeText(const Txt: string; const Height: TfpgCoord = InitTextHeight): TfpgPanel;
+    procedure SetDefaultStyles;
+    procedure SetDarkStyles;
   end;
 
 implementation
@@ -188,6 +191,10 @@ end;
 
 procedure TFrmAbout.DoOnShow({%H-}Sender: TObject);
 begin
+  if Npp.DarkModeEnabled then
+    SetDarkStyles
+  else if FDidStyleChange then
+    SetDefaultStyles;
   FindEntities;
   btnClose.Focused := True;
 end;
@@ -227,6 +234,9 @@ end;
 procedure TFrmAbout.ShowLink(Sender: TObject);
 begin
   TfpgPanel(Sender).MouseCursor := mcHand;
+if Npp.DarkModeEnabled then
+  TfpgPanel(Sender).TextColor := fpgColor($FF, $D7, $0)
+else
   TfpgPanel(Sender).TextColor := clPeru;
   TfpgPanel(Sender).FontDesc := TfpgPanel(Sender).FontDesc + ':Underline';
 end;
@@ -234,6 +244,9 @@ end;
 procedure TFrmAbout.RevertCursor(Sender: TObject);
 begin
   TfpgPanel(Sender).MouseCursor := mcDefault;
+if Npp.DarkModeEnabled then
+  TfpgPanel(Sender).TextColor := fpgColor($0, $BF, $FF)
+else
   TfpgPanel(Sender).TextColor := clHyperLink;
   TfpgPanel(Sender).FontDesc := ReplaceStr(TfpgPanel(Sender).FontDesc, ':Underline', '');
 end;
@@ -253,6 +266,9 @@ begin
     OnMouseEnter := ShowLink;
     OnMouseExit := RevertCursor;
     OnClick := FollowPath;
+  if Npp.DarkModeEnabled then
+    TextColor := fpgColor($0, $BF, $FF)
+  else
     TextColor := clHyperLink;
     FontDesc := 'Tahoma-9';
   end;
@@ -271,6 +287,9 @@ begin
     else
     begin
       Text := 'Not found';
+  if Npp.DarkModeEnabled then
+      TextColor := fpgColor($FF, $63, $47)
+  else
       TextColor := clCrimson;
       OnMouseEnter := nil;
       OnMouseExit := nil;
@@ -335,6 +354,56 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TFrmAbout.SetDefaultStyles;
+begin
+  txtPluginVersion.TextColor := clBlack;
+  txtRelNotes.TextColor := clHyperLink;
+  txtBugURL.TextColor := clHyperLink;
+  txtDownloadSite.TextColor := clHyperLink;
+  txtAuthor.TextColor := clBlack;
+  txtMaintainer.TextColor := clBlack;
+  txtLicense.TextColor := clBlack;
+  lblFpgLicense.TextColor := clBlack;
+  txtFpgAuthors.TextColor := clBlack;
+  txtFpgLicense.TextColor := clBlack;
+  lblHomeDir.TextColor := clBlack;
+  txtHomeDir.TextColor := clBlack;
+  lblConfigDir.TextColor := clBlack;
+  txtConfigDir.TextColor := clBlack;
+  lblEntities.TextColor := clBlack;
+  txtEntities.TextColor := clHyperLink;
+  btnClose.BackgroundColor := clButtonFace;
+  btnClose.TextColor := clBlack;
+  Self.BackgroundColor := clWhite;
+  Self.TextColor := clBlack;
+  FDidStyleChange := False;
+end;
+
+procedure TFrmAbout.SetDarkStyles;
+begin
+  txtPluginVersion.TextColor := clWhite;
+  txtRelNotes.TextColor := fpgColor($0, $BF, $FF);
+  txtBugURL.TextColor := fpgColor($0, $BF, $FF);
+  txtDownloadSite.TextColor := fpgColor($0, $BF, $FF);
+  txtAuthor.TextColor := clWhite;
+  txtMaintainer.TextColor := clWhite;
+  txtLicense.TextColor := clWhite;
+  lblFpgLicense.TextColor := clWhite;
+  txtFpgAuthors.TextColor := clWhite;
+  txtFpgLicense.TextColor := clWhite;
+  lblHomeDir.TextColor := clWhite;
+  txtHomeDir.TextColor := clWhite;
+  lblConfigDir.TextColor := clWhite;
+  txtConfigDir.TextColor := clWhite;
+  lblEntities.TextColor := clWhite;
+  txtEntities.TextColor := fpgColor($0, $BF, $FF);
+  btnClose.BackgroundColor := fpgColor($48, $48, $4E);
+  btnClose.TextColor := clWhite;
+  Self.BackgroundColor := clBlack;
+  Self.TextColor := clWhite;
+  FDidStyleChange := True;
 end;
 
 end.

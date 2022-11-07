@@ -272,6 +272,11 @@ const
        // You allocate a buffer of the length of (the number of characters + 1) then call NPPM_GETLANGUAGEDESC function the 2nd time
    // by passing allocated buffer as argument langDesc
 
+  NPPM_ISDARKMODEENABLED = (NPPMSG + 107);
+  // bool NPPM_ISDARKMODEENABLED(0, 0)
+  // Returns true when Notepad++ Dark Mode is enable, false when it is not.
+  // since 8.4.1
+  // https://github.com/notepad-plus-plus/notepad-plus-plus/commit/1eb5b10e41d7ab92b60aa32b28d4fe7739d15b53
 
 
   // Notification code
@@ -336,6 +341,10 @@ const
  	//scnNotification->nmhdr.hwndFrom = hwndNpp;
   //scnNotification->nmhdr.idFrom = activatedBufferID;
 
+  NPPN_DARKMODECHANGED = (NPPN_FIRST + 27); // To notify plugins that Dark Mode was enabled/disabled
+  //scnNotification->nmhdr.code = NPPN_DARKMODECHANGED;
+  //scnNotification->nmhdr.hwndFrom = hwndNpp;
+  //scnNotification->nmhdr.idFrom = 0;
 
   RUNCOMMAND_USER    = (WM_USER + 3000);
     VAR_NOT_RECOGNIZED = 0;

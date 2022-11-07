@@ -45,6 +45,7 @@ uses
     FuncArray: array of _TFuncItem;
     FClosingBufferID: THandle;
     FConfigDir: string;
+    function IsDarkModeEnabled: Boolean;
   protected
     PluginName: nppString;
     function SupportsBigFiles: Boolean;
@@ -86,6 +87,7 @@ uses
 
     // helpers
     property ConfigDir: string  read GetPluginsConfigDir;
+    property DarkModeEnabled: Boolean read IsDarkModeEnabled;
   end;
 
 
@@ -371,6 +373,19 @@ begin
     (HIWORD(NppVersion) > 8) or
     ((HIWORD(NppVersion) = 8) and
        ((LOWORD(NppVersion) >= 43) and (not (LOWORD(NppVersion) in [191, 192, 193]))));
+end;
+
+function TNppPlugin.IsDarkModeEnabled: Boolean;
+var
+  NppVersion: Cardinal;
+  HasQueryApi: Boolean;
+begin
+  NppVersion := GetNppVersion;
+  HasQueryApi :=
+    ((HIWORD(NppVersion) > 8) or
+     ((HIWORD(NppVersion) = 8) and
+        (((LOWORD(NppVersion) >= 41) and (not (LOWORD(NppVersion) in [191, 192, 193]))))));
+  Result := (HasQueryApi and Boolean(SendMessage(self.NppData.NppHandle, NPPM_ISDARKMODEENABLED, 0, 0)));
 end;
 
 end.
