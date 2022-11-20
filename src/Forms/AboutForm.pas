@@ -169,7 +169,7 @@ begin
   except
     on E: Exception do
     begin
-      MessageBoxW(Npp.App.WindowHandle, PWideChar(E.Message), PWideChar(E.Message),
+      MessageBoxW(Npp.App.WindowHandle, PWideChar(Utf8DEcode(E.Message)), PWideChar(Utf8DEcode(E.Message)),
         MB_ICONERROR);
     end;
   end;
@@ -317,7 +317,7 @@ var
   Txt: string;
   Bump, WrapAt: TfpgCoord;
   OS: TWinVer;
-  i: integer;
+  i, LineSpc: integer;
 begin
   with Path do
   begin
@@ -332,7 +332,11 @@ begin
     else
     begin
       WrapAt := Round(BtnWidth * 0.8);
-      Bump := (Length(Text) div 8);
+      if (OS > WV_WIN10) then
+        LineSpc := 8
+      else
+        LineSpc := 4;
+      Bump := (Length(Text) div LineSpc);
     end;
 
     if Length(Txt) > WrapAt then
