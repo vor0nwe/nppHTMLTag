@@ -62,16 +62,10 @@ begin
   Result := xmsg.Result;
 end;
 
-{$IFDEF NPPUNICODE}
 function isUnicode : Boolean; cdecl; export;
 begin
   Result := true;
 end;
-{$ENDIF}
 
 exports
-  setInfo, getName, getFuncsArray, beNotified, messageProc;
-{$IFDEF NPPUNICODE}
-exports
-  isUnicode;
-{$ENDIF}
+  setInfo, getName, getFuncsArray, beNotified, messageProc, isUnicode;
