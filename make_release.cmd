@@ -8,8 +8,10 @@
 ::
 SETLOCAL
 
-set "VERSION=135"
+set "VERSION=136"
 set "PLUGIN=HTMLTag"
+set "PLUGIN_DLL=out\i386-win32\Release\%PLUGIN%.dll"
+set "PLUGINX64_DLL=out\x86_64-win64\Release\%PLUGIN%.dll"
 set "PLUGIN_LEGACY_DLL=out\i386-win32\Release\%PLUGIN%_unicode.dll"
 set "SLUG_SRC=out\%PLUGIN%_v%VERSION%"
 set "SLUGX64_SRC=out\%PLUGIN%_v%VERSION%_x64"
@@ -28,8 +30,8 @@ lazbuild -B --bm=Release --cpu=x86_64 src\prj\HTMLTag.lpi
 xcopy /DIY *.textile "out\Doc"
 
 :: https://fossil.2of4.net/npp_htmltag/doc/trunk/doc/HTMLTag-readme.txt
-echo F | xcopy /DV ".\out\i386-win32\Release\%PLUGIN%.dll" ".\%PLUGIN_LEGACY_DLL%"
-7z a -tzip "%SLUG%" ".\%PLUGIN_LEGACY_DLL%" ".\dat\*.ini" ".\out\Doc" -y
-7z a -tzip "%SLUGX64%" ".\out\x86_64-win64\Release\%PLUGIN%.dll" ".\dat\*.ini" ".\out\Doc" -y
+echo F | xcopy /DV ".\%PLUGIN_DLL%" ".\%PLUGIN_LEGACY_DLL%"
+7z a -tzip "%SLUG%" ".\%PLUGIN_LEGACY_DLL%" ".\dat\*entities*" ".\out\Doc" -y
+7z a -tzip "%SLUGX64%" ".\%PLUGINX64_DLL%" ".\dat\*entities*" ".\out\Doc" -y
 
 ENDLOCAL

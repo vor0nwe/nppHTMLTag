@@ -23,7 +23,7 @@ uses
 
 const
   Repo = 'https://bitbucket.org/rdipardo/htmltag/downloads';
-  Author = #$00A9' 2011-2020 %s (v0.1 - v1.1)';
+  Author = #$00A9' 2007-2020 %s (v0.1 - v1.1)';
   Maintainer = #$00A9' 2022 Robert Di Pardo (since v1.2)';
   FpgAuthors = #$00A9' Graeme Geldenhuys et al.';
   License = 'Licensed under the MPL 2.0';

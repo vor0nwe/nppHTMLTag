@@ -52,6 +52,12 @@ Extract the DLL and accompanying files to the plugins folder under @%ProgramFile
 For 32-bit versions, make sure the plugin folder is named @HTMLTag_unicode@ and the module is named @HTMLTag_unicode.dll@.
 Otherwise, the folder should be named @HTMLTag@ and the module @HTMLTag.dll@.
 
+Right-click on @HTMLTag.dll@ (64-bit), or @HTMLTag_unicode.dll@ (32-bit), and select _Properties_.
+
+If the _Unblock_ option is shown, click the checkbox and click _Apply_, then _OK_:
+
+!{border:0;width:400}https://i.ibb.co/C77Wmfx/NPPFSIPlugin-MOTW.png(npp-plugin-with-MOTW)!
+
 Restart Notepad++ if it's already running.
 
 
@@ -122,7 +128,8 @@ h2. History
 
 h3. To do
 
-* "[Request#1848503]":1848503 Add a command to close the open tag at the current location
+* -Add a command to close the open tag at the current location-
+  Use the "builtin Notepad++ feature":https://npp-user-manual.org/docs/preferences/#auto-completion
 * Add command to encode entities in the contents only (only apply encoding when not inside tags;
   leave valid tags and entities alone)
 * Add command to select tags only (and leave the contents out of the selection)
@@ -135,6 +142,5 @@ h3. To do
 
 [689eef6cee]https://fossil.2of4.net/npp_htmltag/info/689eef6cee
 [e717ed1de5]https://fossil.2of4.net/npp_htmltag/info/e717ed1de5
-[1848503]https://fossil.2of4.net/npp_htmltag/tktview?name=a3fc2e7864
 [2147949]https://fossil.2of4.net/npp_htmltag/tktview?name=43695affda
 [pl-admin]https://npp-user-manual.org/docs/plugins/#install-using-plugins-admin

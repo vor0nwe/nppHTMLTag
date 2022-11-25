@@ -1,8 +1,40 @@
 h2. Changes since v1.1
 
+h3. Released Versions
+
+* 1.3.6 (2022-11-25)
+** Fixed: remove calls to obsolete style byte APIs [3932513]
+** Changed: remove the non-Unicode compile-time option [eb11bf7]
+** Changed: call Scintilla's full-range APIs in editors that have them [5951d5b], [cffe269]
+** Changed: the About dialog dynamically sets line spacing [36a676c], and has a new dark theme [b6ebd72]
+
 * 1.3.5 (2022-08-18)
 ** Fixed: prevent fpGUI from loading COM libraries that aren't thread safe in the context of DllMain (#4) [2286688]
 ** Fixed: resize the About dialog after construction so long file paths are always legible [538d950]
+
+* 1.2.3 (2022-04-14)
+** Fixed: don't fail the compatibility check when Notepad++ moves to a "short" version like 8.4 (#2) [ea0118f]
+
+* 1.2.2 (2022-03-31)
+** Fixed: always treat selected text as UTF-8 when encoding entities (#1) [d2189a1]
+** Fixed: disable plugin functions for N++ versions 8.1.9.1, 8.1.9.2 and 8.1.9.3 [4a496ff]
+** Changed: when targeting Scintilla 5, add 1 to the length returned by @SCI_GETTEXT@ [4a496ff]
+
+* 1.2.1 (2022-02-27)
+** Fixed: the JavaScript decoder no longer skips codes at line ends when processing multi-line sequences [82f9b0e]
+** Changed: disable plugin functions when loaded into N++ versions older than 8.3 [9862bfd]
+** Changed: refactor all Scintilla API procedures to accommodate massive files of >2GiB (N++ 8.3 feature) [ad2e69c]
+** Changed: show which directories were searched when HTML entities file can't be found [2dd338c]
+** Changed: change the default key mappings of the JS (de/en)code functions to avoid collisions with N++'s builtin line operations [92dce18]
+** Added: update the README with minimum N++ version requirement [1ff61a7]
+** Added: new default mappings for encoding line breaks and tag content selection [92dce18]
+
+* 1.2.0 (2022-02-05)
+** Fixed: made it safe for x64 binaries to call into the @SCI_GETTEXTRANGE@ API without causing access violations in Notepad++ 8.3. Go "here":cref for a brief summary of the "breaking change":db330832 this addresses
+** Fixed: the JS entity decode feature can once again translate Unicode escapes without crashing the editor, as was reported "here":jsDecodeBug and "here":jsDecodeBugOrig
+** Changed: moved development to a "new repository":https://bitbucket.org/rdipardo/htmltag
+
+h3. Unreleased, Unstable Versions
 
 * 1.3.4 (2022-07-15)
 ** Fixed: display all message dialog text as Unicode [86211bd]
@@ -27,28 +59,6 @@ h2. Changes since v1.1
 ** Changed: future-proof the compatibility check by using the zero-padded editor version number, available since N++ 8.4.1 [fde2a41]
 ** Changed: the About dialog is now an interactive form [b4710f8]
 ** Changed: migrated project to Free Pascal and Lazarus 2.2.0
-
-* 1.2.3 (2022-04-14)
-** Fixed: don't fail the compatibility check when Notepad++ moves to a "short" version like 8.4 (#2) [ea0118f]
-
-* 1.2.2 (2022-03-31)
-** Fixed: always treat selected text as UTF-8 when encoding entities (#1) [d2189a1]
-** Fixed: disable plugin functions for N++ versions 8.1.9.1, 8.1.9.2 and 8.1.9.3 [4a496ff]
-** Changed: when targeting Scintilla 5, add 1 to the length returned by @SCI_GETTEXT@ [4a496ff]
-
-* 1.2.1 (2022-02-27)
-** Fixed: the JavaScript decoder no longer skips codes at line ends when processing multi-line sequences [82f9b0e]
-** Changed: disable plugin functions when loaded into N++ versions older than 8.3 [9862bfd]
-** Changed: refactor all Scintilla API procedures to accommodate massive files of >2GiB (N++ 8.3 feature) [ad2e69c]
-** Changed: show which directories were searched when HTML entities file can't be found [2dd338c]
-** Changed: change the default key mappings of the JS (de/en)code functions to avoid collisions with N++'s builtin line operations [92dce18]
-** Added: update the README with minimum N++ version requirement [1ff61a7]
-** Added: new default mappings for encoding line breaks and tag content selection [92dce18]
-
-* 1.2.0 (2022-02-05)
-** Fixed: made it safe for x64 binaries to call into the @SCI_GETTEXTRANGE@ API without causing access violations in Notepad++ 8.3. Go "here":cref for a brief summary of the "breaking change":db330832 this addresses
-** Fixed: the JS entity decode feature can once again translate Unicode escapes without crashing the editor, as was reported "here":jsDecodeBug and "here":jsDecodeBugOrig
-** Changed: moved development to a "new repository":https://bitbucket.org/rdipardo/htmltag
 
 
 [db330832]https://github.com/notepad-plus-plus/notepad-plus-plus/commit/db3308329bd23a073b7de6f4ded2a523b282fcc3#diff-8968b5cad4cc8f62c9204894eea9941dac353af428a26be64f52055e99992040
