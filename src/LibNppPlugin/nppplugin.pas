@@ -154,14 +154,11 @@ end;
 
 procedure TNppPlugin.GetFileLine(var filename: String; var Line: Sci_Position);
 var
-  s: String;
+  s: array[0..1001] of char;
   r: Sci_Position;
 begin
-  s := '';
-  SetLength(s, 300);
-  SendMessage(self.NppData.NppHandle, NPPM_GETFULLCURRENTPATH,0, LPARAM(PChar(s)));
-  SetLength(s, StrLen(PChar(s)));
-  filename := s;
+  SendMessage(self.NppData.NppHandle, NPPM_GETFULLCURRENTPATH, 0, LPARAM(@s[0]));
+  filename := string(s);
 
   r := SendMessage(self.NppData.nppScintillaMainHandle, SCI_GETCURRENTPOS, 0, 0);
   Line := SendMessage(self.NppData.nppScintillaSecondHandle, SCI_LINEFROMPOSITION, r, 0);
@@ -179,11 +176,12 @@ begin
 end;
 
 function TNppPlugin.GetPluginsConfigDir: string;
+var
+  path: array [0..1001] of char;
 begin
   if Length(FConfigDir) = 0 then begin
-    SetLength(FConfigDir, 1001);
-    SendMessage(self.NppData.NppHandle, NPPM_GETPLUGINSCONFIGDIR, 1000, LPARAM(PChar(FConfigDir)));
-    SetString(FConfigDir, PChar(FConfigDir), StrLen(PChar(FConfigDir)));
+    SendMessage(self.NppData.NppHandle, NPPM_GETPLUGINSCONFIGDIR, 1000, LPARAM(@path[0]));
+    FConfigDir := string(path);
   end;
   Result := FConfigDir;
 end;
@@ -281,16 +279,13 @@ end;
 function TNppPlugin.DoOpen(filename: String): Boolean;
 var
   r: Integer;
-  s: string;
+  s: array [0..1001] of char;
 begin
   // ask if we are not already opened
-  s := '';
-  SetLength(s, 500);
   r := SendMessage(self.NppData.NppHandle, NPPM_GETFULLCURRENTPATH, 0,
-    LPARAM(PChar(s)));
-  SetString(s, PChar(s), StrLen(PChar(s)));
+    LPARAM(@s[0]));
   Result := true;
-  if (s = filename) then
+  if WideSameText(string(s), filename) then
     exit;
   r := SendMessage(self.NppData.NppHandle, WM_DOOPEN, 0,
     LPARAM(PChar(filename)));

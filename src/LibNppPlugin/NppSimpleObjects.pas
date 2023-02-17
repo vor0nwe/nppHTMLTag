@@ -218,9 +218,7 @@ interface
         FDocuments: TDocuments;
 
 
-        function  GetPath(): WideString;
         function  GetDocument(): TActiveDocument;
-        function  GetConfigFolder(): nppString;
       protected
         procedure SetApiLevel(Api: TSciApiLevel); override;
       public
@@ -229,8 +227,6 @@ interface
 
 
         property WindowHandle: THandle            read FWindowHandle;
-        property Path: WideString                 read GetPath;
-        property ConfigFolder: nppString          read GetConfigFolder;
 
         property Editors: TEditors                read FEditors;
         property Documents: TDocuments            read FDocuments;
@@ -1029,23 +1025,6 @@ begin
   Result := FEditors.Item[Index];
 end;
 
-{ ------------------------------------------------------------------------------------------------ }
-
-function TApplication.GetPath: WideString;
-begin
-{$MESSAGE HINT 'TODO: use GetModuleFileNameEx'}
-  Result := UTF8Decode(ParamStr(0)); // TODO: make long path?
-end;
-
-{ ------------------------------------------------------------------------------------------------ }
-
-function TApplication.GetConfigFolder: nppString;
-var
-  Path: array [0..MAX_PATH] of nppChar;
-begin
-  SendMessage(NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, @Path[0]);
-  Result := nppString(Path);
-end;
 
 { ------------------------------------------------------------------------------------------------ }
 

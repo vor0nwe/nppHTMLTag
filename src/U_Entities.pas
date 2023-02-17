@@ -12,7 +12,8 @@ unit U_Entities;
 interface
 uses
   Classes,
-  NppSimpleObjects;
+  NppSimpleObjects,
+  U_Npp_HTMLTag;
 
 type
   TEntityReplacementScope = (ersSelection, ersDocument, ersAllDocuments);
@@ -36,7 +37,7 @@ var
   MaxEntityLength: integer;
 
 { ------------------------------------------------------------------------------------------------ }
-function LoadEntities(ANpp: TApplication; ASet: string = 'HTML 4'): TStringList;
+function LoadEntities(ANpp: TNppPluginHTMLTag; ASet: string = 'HTML 4'): TStringList;
 var
   IniFile: WideString;
   Lines: TStringList;
@@ -54,13 +55,13 @@ begin
   if i >= 0 then begin
     Result := TStringList(EntityLists.Objects[i]);
   end else begin
-    IniFile := WideFormat('%s%s', [IncludeTrailingPathDelimiter(GetApplication.ConfigFolder), 'HTMLTag-entities.ini']);
-    ErrMsg := WideFormat('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
+    IniFile := ANpp.Entities;
+    ErrMsg := WideFormat('%s must be saved to'#13#10'%s', [EntitiesConf, ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
       IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
       ErrMsg := Concat(ErrMsg, WideFormat(#13#10'or to'#13#10'%s', [ExtractFileDir(IniFile)]));
     if not FileExists(IniFile) then begin
-      MessageBoxW(ANpp.WindowHandle, PWideChar(ErrMsg), PWideChar('Missing Entities File'), MB_ICONERROR);
+      MessageBoxW(ANpp.App.WindowHandle, PWideChar(ErrMsg), PWideChar('Missing Entities File'), MB_ICONERROR);
       FreeAndNil(EntityLists);
       Result := nil;
       Exit;
@@ -118,7 +119,6 @@ end{LoadEntities};
 { ------------------------------------------------------------------------------------------------ }
 procedure EncodeEntities(const Scope: TEntityReplacementScope; const Options: TEntityReplacementOptions);
 var
-  npp: TApplication;
   doc: TActiveDocument;
   DocIndex: Integer;
   Text: WideString;
@@ -133,11 +133,10 @@ var
   end;
   { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 begin
-  npp := GetApplication();
 
   case Scope of
     ersDocument: begin
-      doc := npp.ActiveDocument;
+      doc := npp.App.ActiveDocument;
       Text := doc.Text;
       if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
         doc.Text := Text;
@@ -145,8 +144,8 @@ begin
     end;
 
     ersAllDocuments: begin
-      for DocIndex := 0 to npp.Documents.Count - 1 do begin
-        doc := npp.Documents[DocIndex].Activate;
+      for DocIndex := 0 to npp.App.Documents.Count - 1 do begin
+        doc := npp.App.Documents[DocIndex].Activate;
         Text := doc.Text;
         if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
           doc.Text := Text;
@@ -155,7 +154,7 @@ begin
     end;
 
     else begin // ersSelection
-      doc := npp.ActiveDocument;
+      doc := npp.App.ActiveDocument;
       Text := doc.Selection.Text;
       if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
         doc.Selection.Text := Text;
@@ -210,7 +209,6 @@ const
   scHexLetters = 'ABCDEFabcdef';
   scLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 var
-  npp: TApplication;
   doc: TActiveDocument;
   Entities: TStringList;
   Text: WideString;
@@ -224,8 +222,7 @@ var
 begin
   EntitiesReplaced := 0;
 
-  npp := GetApplication();
-  doc := npp.ActiveDocument;
+  doc := npp.App.ActiveDocument;
   if doc.Language = L_XML then begin
     Entities := LoadEntities(npp, 'XML');
   end else begin

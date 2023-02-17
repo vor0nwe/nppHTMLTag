@@ -28,7 +28,6 @@ const
   FpgAuthors = #$00A9' Graeme Geldenhuys et al.';
   License = 'Licensed under the MPL 2.0';
   FpgLicense = 'Licensed under the LGPL 2.1 with static linking exception';
-  EntitiesConf = 'HTMLTag-entities.ini';
   BtnWidth = 85;
   InitFromHeight = 450;
   InitTextHeight = 18;
@@ -149,7 +148,7 @@ begin
     WrapFilePath(txtHomeDir);
 
     lblConfigDir := MakeText('Config location');
-    txtConfigDir := MakeText(UTF8ToAnsi(UTF8Encode(Npp.App.ConfigFolder)), 24);
+    txtConfigDir := MakeText(UTF8ToAnsi(UTF8Encode(Npp.ConfigDir)), 24);
     WrapFilePath(txtConfigDir);
 
     lblEntities := MakeText('HTML entities file');
@@ -287,6 +286,7 @@ begin
     else
     begin
       Text := 'Not found';
+      FontDesc := ReplaceStr(FontDesc, ':Underline', '');
   if Npp.DarkModeEnabled then
       TextColor := fpgColor($FF, $63, $47)
   else
@@ -301,10 +301,10 @@ end;
 
 procedure TFrmAbout.FindEntities;
 begin
-  FEntities := WideFormat('%s%s%s', [Npp.App.ConfigFolder, PathDelim, EntitiesConf]);
+  FEntities := Npp.Entities;
 
   if not FileExists(FEntities) then
-    FEntities := WideFormat('%s%s%s', [ExtractFileDir(FDLLName), PathDelim, EntitiesConf]);
+    FEntities := ChangeFilePath(Npp.Entities, TSpecialFolders.DLL);
 
   txtEntities.Text := UTF8Encode(FEntities);
 

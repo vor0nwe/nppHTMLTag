@@ -17,12 +17,16 @@ uses
   AboutForm,
   NppSimpleObjects, L_VersionInfoW;
 
+const
+  EntitiesConf: nppString = 'HTMLTag-entities.ini';
+
 type
   TNppPluginHTMLTag = class(TNppPlugin)
   private
     FApp: TApplication;
     FVersionInfo: TFileVersionInfo;
     FVersionStr: nppString;
+    function GetEntitiesFilePath: nppString;
   public
     constructor Create;
     destructor Destroy; override;
@@ -34,6 +38,7 @@ type
     procedure commandEncodeJS;
     procedure commandDecodeJS;
     procedure commandAbout;
+    procedure SetInfo(NppData: TNppData); override;
     procedure DoNppnToolbarModification; override;
 
     procedure ShellExecute(const FullName: WideString; const Verb: WideString = 'open'; const WorkingDir: WideString = '';
@@ -41,6 +46,7 @@ type
 
     property App: TApplication  read FApp;
     property Version: nppString  read FVersionStr;
+    property Entities: nppString  read GetEntitiesFilePath;
   end;
 
 procedure _commandFindMatchingTag(); cdecl;
@@ -193,6 +199,14 @@ begin
   if Assigned(About) then
     FreeAndNil(About);
   inherited;
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.SetInfo(NppData: TNppData);
+begin
+  inherited SetInfo(NppData);
+  if not FileExists(Entities) then
+    CopyFileW(PWChar(ChangeFilePath(Entities, TSpecialFolders.DLL)), PWChar(Entities), True);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -351,6 +365,10 @@ begin
 end {TNppPluginHTMLTag.commandAbout};
 
 { ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetEntitiesFilePath: nppString;
+begin
+  Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + EntitiesConf;
+end {TNppPluginHTMLTag.GetEntitiesFilePath};
 
 
 
