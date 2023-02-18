@@ -18,19 +18,17 @@ set "SLUGX64_SRC=out\%PLUGIN%_v%VERSION%_x64"
 set "SLUG=%SLUG_SRC%.zip"
 set "SLUGX64=%SLUGX64_SRC%.zip"
 
-del /S /Q /F out\*.zip 2>NUL
-rmdir /S /Q out\obj out\i386-win32\Release out\x86_64-win64\Release 2>NUL
-call %~dp0src\Forms\suppress_ole_init.cmd
+call %~dp0build.cmd Release i386 clean
 if %errorlevel% NEQ 0 (
-	echo Patch failed
 	exit /B %errorlevel%
 )
-lazbuild -B --bm=Release --cpu=i386 src\prj\HTMLTag.lpi
-lazbuild -B --bm=Release --cpu=x86_64 src\prj\HTMLTag.lpi
+call %~dp0build.cmd Release x86_64
 xcopy /DIY *.textile "out\Doc"
 
 :: https://fossil.2of4.net/npp_htmltag/doc/trunk/doc/HTMLTag-readme.txt
 echo F | xcopy /DV ".\%PLUGIN_DLL%" ".\%PLUGIN_LEGACY_DLL%"
+upx.exe --best -q ".\%PLUGIN_LEGACY_DLL%"
+upx.exe --best -q ".\%PLUGINX64_DLL%"
 7z a -tzip "%SLUG%" ".\%PLUGIN_LEGACY_DLL%" ".\dat\*entities*" ".\out\Doc" -y
 7z a -tzip "%SLUGX64%" ".\%PLUGINX64_DLL%" ".\dat\*entities*" ".\out\Doc" -y
 

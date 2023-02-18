@@ -72,13 +72,9 @@
 -dSCI_DISABLE_PROVISIONAL
 -FcUTF8
 -vm2026,4104,5024"/>
-            <OtherDefines Count="2">
+            <OtherDefines Count="1">
               <Define0 Value="UNICODE"/>
             </OtherDefines>
-            <ExecuteAfter>
-              <Command Value="&quot;C:\Users\Rob\scoop\apps\upx\current\upx.exe&quot; --best -q &quot;$TargetFile()&quot;"/>
-              <CompileReasons Compile="False" Run="False"/>
-            </ExecuteAfter>
           </Other>
         </CompilerOptions>
       </Item2>
