@@ -101,6 +101,8 @@ begin
     FVersion := TFileVersionInfo.Create(FDLLName);
     Width := 575;
     Height := InitFromHeight;
+    if Npp.HasNarrowDialogBorders then
+      SetHeight(Height + GetSystemMetrics(SM_CXPADDEDBORDER)*3);
     BackgroundColor := clWhite;
     WindowAttributes := [waBorderless];
     WindowPosition := wpScreenCenter;

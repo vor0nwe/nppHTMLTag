@@ -46,6 +46,7 @@ uses
     FClosingBufferID: THandle;
     FConfigDir: string;
     function IsDarkModeEnabled: Boolean;
+    function MinSubsystemIsVista: Boolean;
   protected
     PluginName: nppString;
     function SupportsBigFiles: Boolean;
@@ -63,6 +64,10 @@ uses
     constructor Create;
     destructor Destroy; override;
     function CmdIdFromDlgId(DlgId: Integer): Integer;
+
+    // Dialogs need extra padding since v8.4.9
+    // https://github.com/notepad-plus-plus/notepad-plus-plus/pull/13054#issuecomment-1419562836
+    function HasNarrowDialogBorders: Boolean;
 
     // needed for DLL export.. wrappers are in the main dll file.
     procedure SetInfo(NppData: TNppData); virtual;
@@ -381,6 +386,24 @@ begin
      ((HIWORD(NppVersion) = 8) and
         (((LOWORD(NppVersion) >= 41) and (not (LOWORD(NppVersion) in [191, 192, 193]))))));
   Result := (HasQueryApi and Boolean(SendMessage(self.NppData.NppHandle, NPPM_ISDARKMODEENABLED, 0, 0)));
+end;
+
+function TNppPlugin.HasNarrowDialogBorders: Boolean;
+begin
+    Result :=
+      MinSubsystemIsVista and
+        (TWinVer(SendMessage(self.NppData.NppHandle, NPPM_GETWINDOWSVERSION, 0, 0)) >= WV_WIN8);
+end;
+
+function TNppPlugin.MinSubsystemIsVista: Boolean;
+var
+  NppVersion: Cardinal;
+begin
+  NppVersion := GetNppVersion;
+  Result :=
+    ((HIWORD(NppVersion) > 8) or
+     ((HIWORD(NppVersion) = 8) and
+        (((LOWORD(NppVersion) >= 49) and (not (LOWORD(NppVersion) in [191, 192, 193]))))));
 end;
 
 end.
