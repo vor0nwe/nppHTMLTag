@@ -7,6 +7,21 @@ Originally hosted on http://fossil.2of4.net/npp_htmltag/
 
 Currently maintained by "Robert Di DiPardo":mailto:dipardo.r@gmail.com
 
+h2. Downloads
+
+h3. Current Versions (>= v1.2.0)
+
+* https://bitbucket.org/rdipardo/htmltag/downloads
+* https://github.com/rdipardo/nppHTMLTag/releases (mirror)
+
+h3. Old Versions (<= v1.1.0)
+
+* http://fossil.2of4.net/npp_htmltag
+
+*Note*
+_v1.1.0 was the last release supporting ANSI versions of Notepad++_
+
+
 h2. Introduction
 
 This plug-in provides three core functions to Notepad++:
@@ -75,20 +90,6 @@ h2. Usage
 All commands are available under the Plugins menu item 'HTML Tag'; the shortcut keys can be adjusted
 with the shortcut mapper.
 
-bq. For release versions up to and including 1.1.0, visit http://fossil.2of4.net/npp_htmltag
-New releases are available at https://bitbucket.org/rdipardo/htmltag/downloads
-Note that v1.1.0 was the last release with an ANSI version
-
-_Up to version 1.1.0, plugin release bundles include all of the following:_
-
-| HTMLTag.dll | The 64-bits unicode version of the plug-in, for Notepad++ version 7.0 and up. |
-|HTMLTag_unicode.dll   |  The 32-bits unicode version of the plug-in, for Notepad++ version 5.1 and up.|
-|HTMLTag_ansi.dll    |    The 32-bits ANSI version of the plug-in, for Notepad++ versions up to and including
-                        version 5.0.3. Note that this version will not be supported after v0.4.0.|
-|HTMLTag-entities.ini  | This file contains the list(s) of entities that will be processed. For now,
-                        only the list headed with [HTML 4] will be used.  This can be adjusted if
-                        you want to use other entities.|
-|HTMLTag-readme.txt    |  The file you're reading now.|
 
 h2. History
 

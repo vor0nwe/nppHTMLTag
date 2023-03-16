@@ -2,6 +2,13 @@ h2. Changes since v1.1
 
 h3. Released Versions
 
+* 1.3.7 (2023-03-16)
+** Fixed: draw the About dialog with padded dimensions for N++ 8.4.9 and later [c4d621b]
+** Changed: copy HTML entities to the user's @Config@ directory for easier access and editing [b7ea8a5]
+** Changed: embed the logo from the old "Fossil repository":fossil in the DLL
+** Changed: name release archives with dotted version numbers (to match the git tag; see next)
+** Added: a Circle CI workflow now builds release archives and updates "the release feed":mirror on GitHub [f916756], [d3c7d6d]
+
 * 1.3.6 (2022-11-25)
 ** Fixed: remove calls to obsolete style byte APIs [3932513]
 ** Changed: remove the non-Unicode compile-time option [eb11bf7]
@@ -66,3 +73,5 @@ h3. Unreleased, Unstable Versions
 [jsDecodeBug]https://community.notepad-plus-plus.org/topic/18488/htmltag-1-1-plugin-broken-since-npp-7-7
 [jsDecodeBugOrig]https://fossil.2of4.net/npp_htmltag/tktview?name=c3c733e21f
 [tagFinderHangs]https://community.notepad-plus-plus.org/topic/22503/new-version-of-html-tag/24
+[fossil]https://fossil.2of4.net/npp_htmltag
+[mirror]https://github.com/rdipardo/nppHTMLTag/releases
