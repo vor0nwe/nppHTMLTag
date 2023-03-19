@@ -75,8 +75,11 @@ jobs:
           path: out/<< parameters.plugin-name >>_<< pipeline.git.tag >>_x64.zip
           destination: << parameters.plugin-name >>_<< pipeline.git.tag >>_x64.zip
       - run:
-          name: Create GitHub Release
-          command: bash.exe .circleci/scripts/gh_release.sh
+          name: Create Release
+          command: |-
+            bash .circleci/scripts/bb_release.sh
+            bash .circleci/scripts/gh_release.sh
+          shell: bash.exe
           environment:
             SLUGX86: << parameters.plugin-name >>_<< pipeline.git.tag >>.zip
             SLUGX64: << parameters.plugin-name >>_<< pipeline.git.tag >>_x64.zip

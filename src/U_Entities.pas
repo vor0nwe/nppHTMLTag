@@ -37,7 +37,7 @@ var
   MaxEntityLength: integer;
 
 { ------------------------------------------------------------------------------------------------ }
-function LoadEntities(ANpp: TNppPluginHTMLTag; ASet: string = 'HTML 4'): TStringList;
+function LoadEntities(ANpp: TNppPluginHTMLTag; ASet: string = 'HTML 5'): TStringList;
 var
   IniFile: WideString;
   Lines: TStringList;
