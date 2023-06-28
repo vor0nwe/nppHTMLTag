@@ -6,6 +6,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 #
+test -z "$BB_REPO_TOKEN" && exit 0
 set -e
 cd "$BIN_DIR"
 

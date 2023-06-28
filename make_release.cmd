@@ -29,7 +29,7 @@ xcopy /DIY *.textile "out\Doc"
 echo F | xcopy /DV ".\%PLUGIN_DLL%" ".\%PLUGIN_LEGACY_DLL%"
 upx.exe --best -q ".\%PLUGIN_LEGACY_DLL%"
 upx.exe --best -q ".\%PLUGINX64_DLL%"
-7z a -tzip "%SLUG%" ".\%PLUGIN_LEGACY_DLL%" ".\dat\*entities*" ".\out\Doc" -y
-7z a -tzip "%SLUGX64%" ".\%PLUGINX64_DLL%" ".\dat\*entities*" ".\out\Doc" -y
+7z a -tzip "%SLUG%" ".\%PLUGIN_LEGACY_DLL%" ".\dat\*entities.ini" ".\out\Doc" -y
+7z a -tzip "%SLUGX64%" ".\%PLUGINX64_DLL%" ".\dat\*entities.ini" ".\out\Doc" -y
 
 ENDLOCAL

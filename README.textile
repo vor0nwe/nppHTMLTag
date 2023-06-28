@@ -9,12 +9,12 @@ Currently maintained by "Robert Di DiPardo":mailto:dipardo.r@gmail.com
 
 h2. Downloads
 
-h3. Current Versions (>= v1.2.0)
+h3. Current Versions (1.2.0, ...)
 
 * https://bitbucket.org/rdipardo/htmltag/downloads
 * https://github.com/rdipardo/nppHTMLTag/releases (mirror)
 
-h3. Old Versions (<= v1.1.0)
+h3. Old Versions (..., 1.1.0)
 
 * http://fossil.2of4.net/npp_htmltag
 
@@ -136,8 +136,8 @@ h3. To do
 * Add command to select tags only (and leave the contents out of the selection)
 * Make it play nice(r) with PHP & ASP tags (either highlight those separately or ignore them)
 * Add option to encode entities 'as-you-type'
-* Add option to close tags 'as-you-type' (type '</' and the rest will be inserted automagically)
-* "[Request#2147949]":2147949 drop down a list of tags after '<'
+* Add option to close tags 'as-you-type' (type '&lt;/' and the rest will be inserted automagically)
+* "[Request#2147949]":2147949 drop down a list of tags after '&lt;'
 * "[Request#2147949]":2147949 drop down a list of attributes on space after a tag
 
 

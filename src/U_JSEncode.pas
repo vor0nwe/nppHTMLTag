@@ -156,7 +156,8 @@ begin
           end;
         end else
           Match.Text := WideChar(HiByte);
-          if (Result < 1) then doc.Selection.StartPos := Match.StartPos;
+
+        if (Result < 1) then doc.Selection.StartPos := Match.StartPos;
         Inc(Result);
       end;
     until Match.Length = 0;
