@@ -34,8 +34,8 @@
             <Filename Value="..\..\out\$(TargetCPU)-$(TargetOS)\$(BuildMode)\$NameOnly($(ProjFile))"/>
           </Target>
           <SearchPaths>
-            <IncludeFiles Value="..;..\Common;$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..;..\LibNppPlugin;..\Forms"/>
+            <IncludeFiles Value="..;$(ProjOutDir)"/>
+            <OtherUnitFiles Value="..;..\Common;..\LibNppPlugin;..\Forms"/>
             <UnitOutputDirectory Value="..\..\out\obj\$(TargetCPU)-$(TargetOS)\$(BuildMode)"/>
           </SearchPaths>
           <Parsing>
@@ -134,8 +134,8 @@
       <Filename Value="..\..\out\$(TargetCPU)-$(TargetOS)\$(BuildMode)\$NameOnly($(ProjFile))"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="..;..\Common;$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..;..\LibNppPlugin;..\Forms"/>
+      <IncludeFiles Value="..;$(ProjOutDir)"/>
+      <OtherUnitFiles Value="..;..\Common;..\LibNppPlugin;..\Forms"/>
       <UnitOutputDirectory Value="..\..\out\obj\$(TargetCPU)-$(TargetOS)\$(BuildMode)"/>
     </SearchPaths>
     <Parsing>

@@ -42,13 +42,13 @@ uses
 
   TNppPlugin = class(TObject)
   private
-    FuncArray: array of _TFuncItem;
     FClosingBufferID: THandle;
     FConfigDir: string;
     function IsDarkModeEnabled: Boolean;
     function MinSubsystemIsVista: Boolean;
   protected
     PluginName: nppString;
+    FuncArray: array of _TFuncItem;
     function SupportsBigFiles: Boolean;
     function HasV5Apis: Boolean;
     function HasFullRangeApis: Boolean;
@@ -81,6 +81,7 @@ uses
     procedure DoNppnShutdown; virtual;
     procedure DoNppnBufferActivated(const BufferID: THandle); virtual;
     procedure DoNppnFileClosed(const BufferID: THandle); virtual;
+    procedure DoCharAdded(const hwnd: HWND; const ch: Integer); virtual;
     procedure DoUpdateUI(const hwnd: HWND; const updated: Integer); virtual;
     procedure DoModified(const hwnd: HWND; const modificationType: Integer); virtual;
 
@@ -214,6 +215,10 @@ begin
       end;
     end else begin
       case sn.nmhdr.code of
+        SCN_CHARADDED: begin
+          if (sn.characterSource = SC_CHARACTERSOURCE_DIRECT_INPUT) then
+            Self.DoCharAdded(HWND(sn.nmhdr.hwndFrom), sn.ch);
+        end;
         SCN_MODIFIED: begin
           Self.DoModified(HWND(sn.nmhdr.hwndFrom), sn.modificationType);
         end;
@@ -258,6 +263,10 @@ end;
 procedure TNppPlugin.DoNppnFileClosed(const BufferID: THandle);
 begin
   // override these
+end;
+
+procedure TNppPlugin.DoCharAdded(const hwnd: HWND; const ch: Integer);
+begin
 end;
 
 procedure TNppPlugin.DoModified(const hwnd: HWND; const modificationType: Integer);

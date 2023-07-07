@@ -23,7 +23,6 @@ function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
 uses
-  Windows,
   SysUtils,
   NppPlugin;
 
@@ -100,6 +99,7 @@ begin
   Result := DoEncodeJS(Text);
   if Result > 0 then begin
     Range.Text := Text;
+    Range.ClearSelection;
   end;
 end{DoEncodeJS};
 
@@ -162,8 +162,7 @@ begin
       end;
     until Match.Length = 0;
 
-    if ((Result > 1) and (Target.StartPos > 0)) then
-      doc.SendMessage(SCI_SETSEL, doc.Selection.StartPos, doc.SendMessage(SCI_POSITIONBEFORE, doc.Selection.EndPos));
+    if Result > 0 then doc.Selection.ClearSelection;
   finally
     Target.Free;
     Match.Free;

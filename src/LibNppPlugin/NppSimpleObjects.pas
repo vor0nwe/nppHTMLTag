@@ -37,6 +37,8 @@ interface
         FStartPos:  Sci_Position;
         FEndPos:    Sci_Position;
 
+        function  GetAnchor(): Sci_Position;
+        procedure SetAnchor(const AValue: Sci_Position);
         function  GetStart(): Sci_Position; virtual;
         procedure SetStart(const AValue: Sci_Position); virtual;
         function  GetEnd(): Sci_Position; virtual;
@@ -57,10 +59,12 @@ interface
         destructor  Destroy; override;
 
         procedure Select();
+        procedure ClearSelection;
         procedure Indent(const Levels: integer = 1);
         procedure Mark(const Style: integer; const DurationInMs: cardinal = 0);
 
         property Document: TActiveDocument  read FEditor;
+        property Anchor: Sci_Position       read GetAnchor        write SetAnchor;
         property StartPos: Sci_Position     read FStartPos        write SetStart;
         property EndPos: Sci_Position       read FEndPos          write SetEnd;
         property Length: Sci_Position       read GetLength        write SetLength;
@@ -75,8 +79,6 @@ interface
     { -------------------------------------------------------------------------------------------- }
     TSelection = class(TTextRange)
       protected
-        function  GetAnchor(): Sci_Position;
-        procedure SetAnchor(const AValue: Sci_Position);
         function  GetCurrentPos(): Sci_Position;
         procedure SetCurrentPos(const AValue: Sci_Position);
         function  GetStart(): Sci_Position; override;
@@ -90,7 +92,6 @@ interface
       public
         constructor Create(const AEditor: TActiveDocument);
 
-        property Anchor: Sci_Position   read GetAnchor        write SetAnchor;
         property Position: Sci_Position read GetCurrentPos    write SetCurrentPos;
         property StartPos: Sci_Position read GetStart         write SetStart;
         property EndPos: Sci_Position   read GetEnd           write SetEnd;
@@ -143,6 +144,7 @@ interface
         procedure SetText(const AValue: WideString);
         function  GetLength(): Sci_Position;
         function  GetLineCount(): Sci_Position;
+        function  GetNextLineStart(): Sci_Position;
         function  GetLangType(): LangType;
         procedure SetLangType(const AValue: LangType);
 
@@ -174,6 +176,7 @@ interface
         property Text: WideString     read GetText      write SetText;
         property Length: Sci_Position read GetLength;
         property LineCount: Sci_Position read GetLineCount;
+        property NextLineStartPosition: Sci_Position read GetNextLineStart;
         property Language: LangType   read GetLangType  write SetLangType;
 
         property CurrentPosition:Sci_Position read GetCurrentPos  write SetCurrentPos;
@@ -299,6 +302,18 @@ destructor TTextRange.Destroy;
 begin
 
   inherited;
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+function TTextRange.GetAnchor: Sci_Position;
+begin
+  Result := FEditor.SendMessage(SCI_GETANCHOR);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+procedure TTextRange.SetAnchor(const AValue: Sci_Position);
+begin
+  FEditor.SendMessage(SCI_SETANCHOR, AValue);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -467,24 +482,24 @@ begin
   FEditor.SendMessage(SCI_SCROLLCARET);
 end;
 
+{ ------------------------------------------------------------------------------------------------ }
+procedure TTextRange.ClearSelection();
+var
+  SciMsg: Cardinal;
+begin
+  if (Self.Anchor > FEditor.CurrentPosition) then
+    SciMsg := SCI_POSITIONBEFORE
+  else
+    SciMsg := SCI_POSITIONAFTER;
+  FEditor.CurrentPosition := FEditor.SendMessage(SciMsg, FEditor.CurrentPosition);
+end;
+
 { ================================================================================================ }
 { TSelection }
 
 constructor TSelection.Create(const AEditor: TActiveDocument);
 begin
   FEditor := AEditor;
-end;
-
-{ ------------------------------------------------------------------------------------------------ }
-
-function TSelection.GetAnchor: Sci_Position;
-begin
-  Result := FEditor.SendMessage(SCI_GETANCHOR);
-end;
-{ ------------------------------------------------------------------------------------------------ }
-procedure TSelection.SetAnchor(const AValue: Sci_Position);
-begin
-  FEditor.SendMessage(SCI_SETANCHOR, AValue);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -860,6 +875,16 @@ end;
 function TActiveDocument.GetLineCount: Sci_Position;
 begin
   Result := SendMessage(SCI_GETLINECOUNT);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+
+function TActiveDocument.GetNextLineStart(): Sci_Position;
+var
+  LineEndCurrent: Sci_Position;
+begin
+  LineEndCurrent := SendMessage(SCI_GETLINEENDPOSITION, SendMessage(SCI_LINEFROMPOSITION, CurrentPosition));
+  Result := SendMessage(SCI_POSITIONAFTER, LineEndCurrent);
 end;
 
 { ------------------------------------------------------------------------------------------------ }

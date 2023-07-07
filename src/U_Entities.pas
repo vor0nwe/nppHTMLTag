@@ -23,7 +23,7 @@ type
 procedure EncodeEntities(const Scope: TEntityReplacementScope = ersSelection; const Options: TEntityReplacementOptions = []);
 function  DoEncodeEntities(var Text: WideString; const Entities: TStringList; const Options: TEntityReplacementOptions): Integer;
 
-procedure DecodeEntities(const Scope: TEntityReplacementScope = ersSelection);
+function DecodeEntities(const Scope: TEntityReplacementScope = ersSelection): Integer;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
@@ -158,6 +158,7 @@ begin
       Text := doc.Selection.Text;
       if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
         doc.Selection.Text := Text;
+        doc.Selection.ClearSelection;
       end;
     end;
   end{case};
@@ -203,7 +204,7 @@ begin
 end;
 
 { ------------------------------------------------------------------------------------------------ }
-procedure DecodeEntities(const Scope: TEntityReplacementScope = ersSelection);
+function DecodeEntities(const Scope: TEntityReplacementScope = ersSelection): Integer;
 const
   scDigits = '0123456789';
   scHexLetters = 'ABCDEFabcdef';
@@ -233,8 +234,12 @@ begin
     Exit;
 
   Text := doc.Selection.Text;
-
   CharIndex := Pos('&', Text);
+
+  // make sure the selection includes the semicolon
+  if not (Pos(';', Text) > CharIndex) then
+    Exit;
+
   while CharIndex > 0 do begin
     FirstPos := CharIndex;
     LastPos := FirstPos;
@@ -324,7 +329,10 @@ begin
 
   if EntitiesReplaced > 0 then begin
     doc.Selection.Text := Text;
+    doc.Selection.ClearSelection;
   end;
+
+  Result := EntitiesReplaced;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

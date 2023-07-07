@@ -21,12 +21,25 @@ const
   EntitiesConf: nppString = 'HTMLTag-entities.ini';
 
 type
+  TDecodeCmd = (dcAuto = -1, dcEntity, dcUnicode);
+  TCmdMenuPosition = (cmpUnicode = 3, cmpEntities);
+  TPluginOptions = packed record
+    LiveEntityDecoding: LongBool;
+    LiveUnicodeDecoding: LongBool;
+  end;
+  PPluginOption = ^LongBool;
+
   TNppPluginHTMLTag = class(TNppPlugin)
   private
     FApp: TApplication;
     FVersionInfo: TFileVersionInfo;
     FVersionStr: nppString;
+    FOptions: TPluginOptions;
+    function GetOptionsFilePath: nppString;
     function GetEntitiesFilePath: nppString;
+    procedure LoadOptions;
+    procedure SaveOptions;
+    procedure FindAndDecode(const KeyCode: Integer; Cmd: TDecodeCmd = dcAuto);
   public
     constructor Create;
     destructor Destroy; override;
@@ -40,12 +53,15 @@ type
     procedure commandAbout;
     procedure SetInfo(NppData: TNppData); override;
     procedure DoNppnToolbarModification; override;
-
+    procedure DoCharAdded({%H-}const hwnd: HWND; const ch: Integer); override;
+    procedure ToggleOption(OptionPtr: PPluginOption; MenuPos: TCmdMenuPosition);
     procedure ShellExecute(const FullName: WideString; const Verb: WideString = 'open'; const WorkingDir: WideString = '';
       const ShowWindow: Integer = SW_SHOWDEFAULT);
 
     property App: TApplication  read FApp;
+    property Options: TPluginOptions read FOptions;
     property Version: nppString  read FVersionStr;
+    property OptionsConfig: nppString  read GetOptionsFilePath;
     property Entities: nppString  read GetEntitiesFilePath;
   end;
 
@@ -56,6 +72,8 @@ procedure _commandEncodeEntities(); cdecl;
 procedure _commandDecodeEntities(); cdecl;
 procedure _commandEncodeJS(); cdecl;
 procedure _commandDecodeJS(); cdecl;
+procedure _toggleLiveEntityecoding; cdecl;
+procedure _toggleLiveUnicodeDecoding; cdecl;
 procedure _commandAbout(); cdecl;
 
 
@@ -70,6 +88,7 @@ uses
   Strutils,
   ShellAPI,
   L_SpecialFolders,
+  Utf8IniFiles,
   U_HTMLTagFinder, U_Entities, U_JSEncode;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -118,6 +137,17 @@ begin
   npp.commandAbout;
 end;
 
+{ ------------------------------------------------------------------------------------------------ }
+procedure _toggleLiveEntityecoding; cdecl;
+begin
+  npp.ToggleOption(@(npp.Options.LiveEntityDecoding), cmpEntities);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+procedure _toggleLiveUnicodeDecoding; cdecl;
+begin
+  npp.ToggleOption(@(npp.Options.LiveUnicodeDecoding), cmpUnicode);
+end;
 
 { ------------------------------------------------------------------------------------------------ }
 procedure HandleException(AException: TObject; AAddress: Pointer);
@@ -168,6 +198,11 @@ begin
 
   self.AddFuncSeparator;
 
+  self.AddFuncItem('Automatically decode entities', _toggleLiveEntityecoding, nil);
+  self.AddFuncItem('Automatically decode Unicode characters', _toggleLiveUnicodeDecoding, nil);
+
+  self.AddFuncSeparator;
+
   self.AddFuncItem('&About...', _commandAbout);
 
   try
@@ -194,6 +229,7 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 destructor TNppPluginHTMLTag.Destroy;
 begin
+  SaveOptions;
   if Assigned(FVersionInfo) then
     FreeAndNil(FVersionInfo);
   if Assigned(About) then
@@ -207,6 +243,8 @@ begin
   inherited SetInfo(NppData);
   if not FileExists(Entities) then
     CopyFileW(PWChar(ChangeFilePath(Entities, TSpecialFolders.DLL)), PWChar(Entities), True);
+
+  LoadOptions;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -228,6 +266,26 @@ begin
     HandleException(ExceptObject, ExceptAddr);
   end;
 {$ENDIF}
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.DoCharAdded({%H-}const hwnd: HWND; const ch: Integer);
+begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
+  FindAndDecode(ch);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.ToggleOption(OptionPtr: PPluginOption; MenuPos: TCmdMenuPosition);
+var
+  cmdIdx: Integer;
+begin
+  OptionPtr^ := (not OptionPtr^);
+  cmdIdx := Length(FuncArray) - Integer(MenuPos);
+  SendMessage(Npp.NppData.nppHandle, NPPM_SETMENUITEMCHECK, FuncArray[cmdIdx].CmdID, LPARAM(OptionPtr^));
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -316,10 +374,14 @@ begin
   if not SupportsBigFiles then
     Exit;
 {$ENDIF}
-  try
-    U_Entities.DecodeEntities();
-  except
-    HandleException(ExceptObject, ExceptAddr);
+  if (App.ActiveDocument.Selection.Length = 0) then
+    FindAndDecode(0, dcEntity)
+  else begin
+    try
+      U_Entities.DecodeEntities();
+    except
+      HandleException(ExceptObject, ExceptAddr);
+    end;
   end;
 end {TNppPluginHTMLTag.commandDecodeEntities};
 
@@ -344,10 +406,14 @@ begin
   if not SupportsBigFiles then
     Exit;
 {$ENDIF}
-  try
-    U_JSEncode.DecodeJS();
-  except
-    HandleException(ExceptObject, ExceptAddr);
+  if (App.ActiveDocument.Selection.Length = 0) then
+    FindAndDecode(0, dcUnicode)
+  else begin
+    try
+      U_JSEncode.DecodeJS();
+    except
+      HandleException(ExceptObject, ExceptAddr);
+    end;
   end;
 end {TNppPluginHTMLTag.commandDecodeJS};
 
@@ -370,10 +436,124 @@ begin
   Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + EntitiesConf;
 end {TNppPluginHTMLTag.GetEntitiesFilePath};
 
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetOptionsFilePath: nppString;
+var
+  PluginName: WideString;
+begin
+  PluginName := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), EmptyWideStr);
+  PluginName := WideStringReplace(PluginName, '_unicode', EmptyWideStr, []);
+  Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + PluginName + '.ini';
+end;
 
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.LoadOptions;
+var
+  config: TUtf8IniFile;
+  autoDecodeJs, autoDecodeEntities: Integer;
+begin
+  FOptions := Default(TPluginOptions);
+  if FileExists(OptionsConfig) then begin
+    config := TUtf8IniFile.Create(OptionsConfig);
+    try
+      FOptions.LiveEntityDecoding := config.ReadBool('AUTO_DECODE', 'ENTITIES', False);
+      FOptions.LiveUnicodeDecoding := config.ReadBool('AUTO_DECODE', 'UNICODE_ESCAPE_CHARS', False);
+    finally
+      config.Free;
+    end;
+  end;
+  autoDecodeJs := Length(FuncArray) - Integer(cmpUnicode);
+  autoDecodeEntities := Length(FuncArray) - Integer(cmpEntities);
+  FuncArray[autoDecodeJs].Checked := Options.LiveUnicodeDecoding;
+  FuncArray[autoDecodeEntities].Checked := Options.LiveEntityDecoding;
+end;
 
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.SaveOptions;
+var
+  config: TUtf8IniFile;
+begin
+  config := TUtf8IniFile.Create(OptionsConfig);
+  try
+    config.WriteBool('AUTO_DECODE', 'ENTITIES', Options.LiveEntityDecoding);
+    config.WriteBool('AUTO_DECODE', 'UNICODE_ESCAPE_CHARS', Options.LiveUnicodeDecoding);
+  finally
+    config.Free;
+  end;
+end;
 
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.FindAndDecode(const KeyCode: Integer; Cmd: TDecodeCmd);
+type
+  TReplaceFunc = function(Scope: TEntityReplacementScope = ersSelection): Integer;
+var
+  doc: TActiveDocument;
+  anchor, caret: Sci_Position;
+  ch, charOffset: Integer;
+  didReplace: Boolean;
 
+  function Replace(Func: TReplaceFunc; Doc: TActiveDocument; Start: Sci_Position; EndPos: Sci_Position): Boolean;
+  var
+    nDecoded: Integer;
+  begin
+    nDecoded := 0;
+    doc.Select(start, endPos - start);
+    try
+      nDecoded := Func();
+    except
+      HandleException(ExceptObject, ExceptAddr);
+    end;
+    Result := (nDecoded > 0);
+  end;
+
+begin
+  ch := KeyCode and $FF;
+  if ((Cmd = dcAuto) and
+      ((not (Options.LiveEntityDecoding or Options.LiveUnicodeDecoding)) or
+        (not (ch in [$09..$0D, $20])))) then
+    Exit;
+
+  charOffset := 0;
+  didReplace := False;
+  doc := App.ActiveDocument;
+  caret := doc.CurrentPosition;
+  if (Cmd = dcAuto) then
+    caret := doc.SendMessage(SCI_POSITIONBEFORE, doc.CurrentPosition);
+
+  for anchor := caret - 1 downto 0 do begin
+    case (Integer(doc.SendMessage(SCI_GETCHARAT, anchor))) of
+      0..$20: Break;
+      $26 {'&'}: begin
+          if (Options.LiveEntityDecoding or (cmd = dcEntity)) then begin
+            didReplace := Replace(@(U_Entities.DecodeEntities), doc, anchor, caret);
+            Break;
+          end;
+      end;
+      $5C {'\'}: begin
+          if (Options.LiveUnicodeDecoding or (cmd = dcUnicode)) then begin
+            didReplace := Replace(@(U_JSEncode.DecodeJS), doc, anchor, caret);
+            // compensate for both characters of '\u' prefix
+            Inc(charOffset);
+            Break;
+          end;
+      end;
+    end;
+  end;
+
+  if didReplace then begin
+    if (ch in [$0A, $0D]) then // ENTER was pressed
+      doc.CurrentPosition := doc.NextLineStartPosition
+    else begin
+      // no inserted char, nothing to offset
+      if (Cmd > dcAuto) then charOffset := -1;
+      doc.CurrentPosition := doc.SendMessage(SCI_POSITIONAFTER, doc.CurrentPosition) + charOffset;
+    end;
+  end else begin
+    // place caret after inserted char
+    if (Cmd = dcAuto) then Inc(caret);
+    doc.Selection.ClearSelection;
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 initialization
