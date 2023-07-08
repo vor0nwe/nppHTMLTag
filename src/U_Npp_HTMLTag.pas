@@ -169,10 +169,10 @@ begin
 
   self.PluginName := '&HTML Tag';
 
-  sk := self.MakeShortcutKey(True, False, False, 'T'); // Ctrl-T
+  sk := self.MakeShortcutKey(False, True, False, 'T'); // Alt-T
   self.AddFuncItem('&Find matching tag', _commandFindMatchingTag, sk);
 
-  sk := self.MakeShortcutKey(True, False, True, 'T'); // Ctrl-Shift-T
+  sk := self.MakeShortcutKey(False, True, True, 'T'); // Alt-Shift-T
   self.AddFuncItem('&Select tag and contents', _commandSelectTagContents, sk);
 
   sk := self.MakeShortcutKey(True, True, False, 'T'); // Ctrl-Alt-T

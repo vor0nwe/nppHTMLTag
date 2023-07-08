@@ -78,8 +78,8 @@ Restart Notepad++ if it's already running.
 
 h2. Usage
 
-| Ctrl+T | to select the matching tag |
-| Ctrl+Shift+T | to select both tags and the entire contents in between |
+| Alt+T | to select the matching tag |
+| Alt+Shift+T | to select both tags and the entire contents in between |
 | Ctrl+Alt+T | to select only the contents between tags |
 | Ctrl+E | to encode all selected non-ASCII characters to their HTML entities |
 | Ctrl+Alt+E | same as Ctrl+E, but encodes line breaks as well |
