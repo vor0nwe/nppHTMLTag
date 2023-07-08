@@ -17,9 +17,6 @@ uses
   AboutForm,
   NppSimpleObjects, L_VersionInfoW;
 
-const
-  EntitiesConf: nppString = 'HTMLTag-entities.ini';
-
 type
   TDecodeCmd = (dcAuto = -1, dcEntity, dcUnicode);
   TCmdMenuPosition = (cmpUnicode = 3, cmpEntities);
@@ -37,6 +34,9 @@ type
     FOptions: TPluginOptions;
     function GetOptionsFilePath: nppString;
     function GetEntitiesFilePath: nppString;
+    function GetDefaultEntitiesPath: nppString;
+    function PluginNameFromModule: nppString;
+    function GetConfigDir: nppString;
     procedure LoadOptions;
     procedure SaveOptions;
     procedure FindAndDecode(const KeyCode: Integer; Cmd: TDecodeCmd = dcAuto);
@@ -63,6 +63,8 @@ type
     property Version: nppString  read FVersionStr;
     property OptionsConfig: nppString  read GetOptionsFilePath;
     property Entities: nppString  read GetEntitiesFilePath;
+    property DefaultEntitiesPath: nppString  read GetDefaultEntitiesPath;
+    property PluginConfigDir: nppString read GetConfigDir;
   end;
 
 procedure _commandFindMatchingTag(); cdecl;
@@ -85,7 +87,6 @@ var
 implementation
 
 uses
-  Strutils,
   ShellAPI,
   L_SpecialFolders,
   Utf8IniFiles,
@@ -207,11 +208,7 @@ begin
 
   try
      FVersionInfo := TFileVersionInfo.Create(TSpecialFolders.DLLFullName);
-{$IFDEF FPC}
-     FVersionStr := UTF8ToString(ChangeFileExt(ExtractFileName(UTF8Encode(TSpecialFolders.DLLFullName)), ''));
-{$ELSE}
-     FVersionStr := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), '');
-{$ENDIF}
+     FVersionStr := PluginNameFromModule();
      FVersionStr :=
       Concat(FVersionStr,
         WideFormat(' %d.%d.%d (%s bit)',
@@ -220,10 +217,6 @@ begin
   except
     FreeAndNil(FVersionInfo);
   end;
-
-{$IFNDEF CPUX64}
-  FVersionStr := UTF8ToString(ReplaceStr(UTF8Encode(FVersionStr), '_unicode', ''));
-{$ENDIF}
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -242,7 +235,7 @@ procedure TNppPluginHTMLTag.SetInfo(NppData: TNppData);
 begin
   inherited SetInfo(NppData);
   if not FileExists(Entities) then
-    CopyFileW(PWChar(ChangeFilePath(Entities, TSpecialFolders.DLL)), PWChar(Entities), True);
+    CopyFileW(PWChar(DefaultEntitiesPath), PWChar(Entities), True);
 
   LoadOptions;
 end;
@@ -433,17 +426,35 @@ end {TNppPluginHTMLTag.commandAbout};
 { ------------------------------------------------------------------------------------------------ }
 function TNppPluginHTMLTag.GetEntitiesFilePath: nppString;
 begin
-  Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + EntitiesConf;
+  Result := IncludeTrailingPathDelimiter(Self.PluginConfigDir) + 'entities.ini';
 end {TNppPluginHTMLTag.GetEntitiesFilePath};
 
 { ------------------------------------------------------------------------------------------------ }
 function TNppPluginHTMLTag.GetOptionsFilePath: nppString;
+begin
+  Result := IncludeTrailingPathDelimiter(Self.PluginConfigDir) + 'options.ini';
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetDefaultEntitiesPath: nppString;
+begin
+  Result := IncludeTrailingPathDelimiter(TSpecialFolders.DLL) + PluginNameFromModule() + '-entities.ini';
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.PluginNameFromModule: nppString;
 var
   PluginName: WideString;
 begin
   PluginName := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), EmptyWideStr);
-  PluginName := WideStringReplace(PluginName, '_unicode', EmptyWideStr, []);
-  Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + PluginName + '.ini';
+  Result := WideStringReplace(PluginName, '_unicode', EmptyWideStr, []);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetConfigDir: nppString;
+begin
+  Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + PluginNameFromModule();
+  if (not DirectoryExists(Result)) then CreateDir(Result);
 end;
 
 { ------------------------------------------------------------------------------------------------ }

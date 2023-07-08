@@ -150,7 +150,7 @@ begin
     WrapFilePath(txtHomeDir);
 
     lblConfigDir := MakeText('Config location');
-    txtConfigDir := MakeText(UTF8ToAnsi(UTF8Encode(Npp.ConfigDir)), 24);
+    txtConfigDir := MakeText(UTF8ToAnsi(UTF8Encode(Npp.PluginConfigDir)), 24);
     WrapFilePath(txtConfigDir);
 
     lblEntities := MakeText('HTML entities file');
@@ -306,7 +306,7 @@ begin
   FEntities := Npp.Entities;
 
   if not FileExists(FEntities) then
-    FEntities := ChangeFilePath(Npp.Entities, TSpecialFolders.DLL);
+    FEntities := Npp.DefaultEntitiesPath;
 
   txtEntities.Text := UTF8Encode(FEntities);
 

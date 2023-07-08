@@ -56,10 +56,10 @@ begin
     Result := TStringList(EntityLists.Objects[i]);
   end else begin
     IniFile := ANpp.Entities;
-    ErrMsg := WideFormat('%s must be saved to'#13#10'%s', [EntitiesConf, ExtractFileDir(IniFile)]);
+    ErrMsg := WideFormat('%s must be saved in'#13#10'%s', [ExtractFileName(IniFile), ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
-      IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
-      ErrMsg := Concat(ErrMsg, WideFormat(#13#10'or to'#13#10'%s', [ExtractFileDir(IniFile)]));
+      IniFile := Npp.DefaultEntitiesPath;
+      ErrMsg := Concat(ErrMsg, WideFormat(#13#10'or %s in'#13#10'%s', [ExtractFileName(IniFile), TSpecialFolders.DLL]));
     if not FileExists(IniFile) then begin
       MessageBoxW(ANpp.App.WindowHandle, PWideChar(ErrMsg), PWideChar('Missing Entities File'), MB_ICONERROR);
       FreeAndNil(EntityLists);
