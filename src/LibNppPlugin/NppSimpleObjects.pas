@@ -484,14 +484,8 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 procedure TTextRange.ClearSelection();
-var
-  SciMsg: Cardinal;
 begin
-  if (Self.Anchor > FEditor.CurrentPosition) then
-    SciMsg := SCI_POSITIONBEFORE
-  else
-    SciMsg := SCI_POSITIONAFTER;
-  FEditor.CurrentPosition := FEditor.SendMessage(SciMsg, FEditor.CurrentPosition);
+  Self.Anchor := FEditor.CurrentPosition;
 end;
 
 { ================================================================================================ }
