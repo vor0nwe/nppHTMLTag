@@ -7,6 +7,7 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 #
 ENTITIES="$(dirname "$0")/HTMLTag-entities.ini"
+EXCLUSIONS='(AMP|bne|bsol|colon|COPY|DD|ENG|equals|ETH|excl|fjlig|GT|lpar|LT|NewLine|nvgt|nvlt|period|QUOT|REG|rpar|sol|Tab|THORN|TRADE)'
 
 cat<<-INI > $ENTITIES
 [HTML 5]
@@ -14,8 +15,8 @@ cat<<-INI > $ENTITIES
 ;
 INI
 
-curl -sL 'https://www.w3.org/TR/html5/entities.json' | jq -r \
-  '. as $ents | keys | sort_by(test("^&[^a-z]*$"))[] | select(test("(?<!NewLine);$")) as $e | $ents[$e].codepoints | map("\($e[1:-1])=\(tostring)")[]' \
+curl -sL 'https://www.w3.org/TR/html5/entities.json' | jq --arg excl "$EXCLUSIONS" -r \
+  '. as $ents | keys[] | select(index(";") and (test("^&\($excl);$") | not)) as $e | $ents[$e].codepoints | unique | map("\($e[1:-1])=\(tostring)")[]' \
   >> $ENTITIES
 
 cat<<-INI >> $ENTITIES

@@ -12,6 +12,7 @@ unit U_Entities;
 interface
 uses
   Classes,
+  IniFiles,
   NppSimpleObjects,
   U_Npp_HTMLTag;
 
@@ -21,7 +22,7 @@ type
   TEntityReplacementOptions = set of TEntityReplacementOption;
 
 procedure EncodeEntities(const Scope: TEntityReplacementScope = ersSelection; const Options: TEntityReplacementOptions = []);
-function  DoEncodeEntities(var Text: WideString; const Entities: TStringList; const Options: TEntityReplacementOptions): Integer;
+function  DoEncodeEntities(var Text: WideString; const Entities: THashedStringList; const Options: TEntityReplacementOptions): Integer;
 
 function DecodeEntities(const Scope: TEntityReplacementScope = ersSelection): Integer;
 
@@ -30,20 +31,20 @@ implementation
 uses
   SysUtils, Windows, StrUtils,
   NppPlugin,
+  Utf8IniFiles,
   L_SpecialFolders;
 
 var
   EntityLists: TStringList;
-  MaxEntityLength: integer;
 
 { ------------------------------------------------------------------------------------------------ }
-function LoadEntities(ANpp: TNppPluginHTMLTag; ASet: string = 'HTML 5'): TStringList;
+function LoadEntities(ANpp: TNppPluginHTMLTag; ASet: string = 'HTML 5'): THashedStringList;
 var
+  Mappings: TUtf8IniFile;
   IniFile: WideString;
   Lines: TStringList;
-  Line, Value, Entity: string;
-  i, Separation, CodePoint: integer;
-  Reading: boolean;
+  Line, Value: string;
+  i, CodePoint: integer;
   ErrMsg: WideString;
 begin
   if not Assigned(EntityLists) then begin
@@ -53,7 +54,7 @@ begin
 
   i := EntityLists.IndexOf(ASet);
   if i >= 0 then begin
-    Result := TStringList(EntityLists.Objects[i]);
+    Result := THashedStringList(EntityLists.Objects[i]);
   end else begin
     IniFile := ANpp.Entities;
     ErrMsg := WideFormat('%s must be saved in'#13#10'%s', [ExtractFileName(IniFile), ExtractFileDir(IniFile)]);
@@ -66,7 +67,7 @@ begin
       Result := nil;
       Exit;
     end else begin
-      Result := TStringList.Create;
+      Result := THashedStringList.Create;
       Result.NameValueSeparator := '=';
       Result.CaseSensitive := True;
       Result.Duplicates := dupIgnore;
@@ -77,38 +78,20 @@ begin
       try
         Lines.CaseSensitive := True;
         Lines.Duplicates := dupAccept;
-        Lines.LoadFromFile(UTF8Encode(IniFile));
-
-        Reading := False;
-        for i := 0 to Lines.Count - 1 do begin
-          Line := Trim(Lines[i]);
-          Separation := Pos(';', Line);
-          if Separation > 0 then begin
-            Line := TrimRight(Copy(Line, 1, Separation - 1));
-          end;
-          if (Length(Line) > 0) and (Line[1] = '[') and (Line[Length(Line)] = ']') then begin
-            // New section
-            Value := Trim(Copy(Line, 2, Length(Line) - 2));
-            Reading := SameText(Value, ASet);
-
-          end else if Reading then begin
-            // New entity?
-            Separation := Pos('=', Line);
-            if Separation > 0 then begin
-              Entity := Copy(Line, 1, Separation - 1);
-              if Length(Entity) > MaxEntityLength then begin
-                MaxEntityLength := Length(Entity);
-              end;
-
-              Value := Trim(Copy(Line, Separation + 1));
-              if TryStrToInt(Value, CodePoint) then begin
-                Result.AddObject(Lines[i], TObject(CodePoint));
-              end;
-            end;
+        Mappings := TUtf8IniFile.Create(IniFile, [ifoCaseSensitive, ifoStripComments]);
+        Mappings.ReadSection(ASet, Lines);
+        for Line in Lines do begin
+          Value := Mappings.ReadString(ASet, Line, EmptyStr);
+          i := Pos(';', Value) - 1;
+          if i <= 0 then i := Length(Value);
+          if TryStrToInt(Trim(Copy(Value, 0, i)), CodePoint) then begin
+            Result.AddPair(Line, IntToStr(CodePoint));
+            Result.AddPair(IntToStr(CodePoint), Line);
           end;
         end;
       finally
         FreeAndNil(Lines);
+        FreeAndNil(Mappings);
       end;
 
     end;
@@ -123,7 +106,7 @@ var
   DocIndex: Integer;
   Text: WideString;
   { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
-  function FetchEntities: TStringList;
+  function FetchEntities: THashedStringList;
   begin
     if doc.Language = L_XML then begin
       Result := LoadEntities(npp, 'XML');
@@ -165,7 +148,7 @@ begin
 end{EncodeEntities};
 
 { ------------------------------------------------------------------------------------------------ }
-function DoEncodeEntities(var Text: WideString; const Entities: TStringList; const Options: TEntityReplacementOptions): Integer;
+function DoEncodeEntities(var Text: WideString; const Entities: THashedStringList; const Options: TEntityReplacementOptions): Integer;
 var
   CharIndex, EntityIndex: integer;
   ReplaceEntity: boolean;
@@ -180,10 +163,10 @@ begin
 
   EncodedEntity := '';
   for CharIndex := Length(Text) downto 1 do begin
-    EntityIndex := Entities.IndexOfObject(TObject(integer(Ord(Text[CharIndex]))));
+    EntityIndex := Entities.IndexOfName(IntToStr(integer(Ord(Text[CharIndex]))));
     if EntityIndex > -1 then begin
       ReplaceEntity := True;
-      EncodedEntity := UTF8Decode(Entities.Names[EntityIndex]);
+      EncodedEntity := UTF8Decode(Entities.ValueFromIndex[EntityIndex]);
     end else if Ord(Text[CharIndex]) > 127 then begin
       ReplaceEntity := True;
       EncodedEntity := WideFormat('#%s', [IntToStr(Ord(Text[CharIndex]))]);
@@ -211,7 +194,7 @@ const
   scLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 var
   doc: TActiveDocument;
-  Entities: TStringList;
+  Entities: THashedStringList;
   Text: WideString;
   CharIndex, EntityIndex: integer;
   EntitiesReplaced: integer;
@@ -222,6 +205,7 @@ var
   CodePoint: integer;
 begin
   EntitiesReplaced := 0;
+  Result := EntitiesReplaced;
 
   doc := npp.App.ActiveDocument;
   if doc.Language = L_XML then begin
@@ -251,7 +235,7 @@ begin
         0: begin
           AllowedChars := '#' + scLetters + ';';
         end;
-        1: begin 
+        1: begin
           if Text[FirstPos + 1] = '#' then begin
             IsNumeric := True;
             AllowedChars := 'x' + scDigits;
@@ -304,7 +288,7 @@ begin
       Entity := UTF8Encode(Copy(Text, FirstPos + 1, LastPos - FirstPos));
       EntityIndex := Entities.IndexOfName(Entity);
       if EntityIndex > -1 then begin
-        CodePoint := integer(Entities.Objects[EntityIndex]);
+        CodePoint := StrToInt(Entities.ValueFromIndex[EntityIndex]);
         IsValid := True;
       end else begin
         CodePoint := 0;
