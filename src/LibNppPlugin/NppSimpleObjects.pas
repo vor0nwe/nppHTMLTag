@@ -550,11 +550,11 @@ function TSelection.GetText: WideString;
 var
   Chars: AnsiString;
 begin
-  Chars := AnsiString(StringOfChar(#0, Self.GetLength + 1));
+  Chars := StringOfChar(#0, Self.GetLength + 1);
   FEditor.SendMessage(SCI_GETSELTEXT, 0, PAnsiChar(Chars));
   case FEditor.SendMessage(SCI_GETCODEPAGE) of
     SC_CP_UTF8:
-      Result := WideString(UTF8Decode(Chars))
+      Result := UTF8Decode(Chars)
     else
       Result := WideString(UTF8Encode(Chars))
   end;
@@ -954,7 +954,12 @@ begin
   Chars := EmptyStr;
   SetLength(Chars, Len);
   SendMessage(SCI_GETTEXT, Len, PAnsiChar(Chars));
-  Result := WideString(Chars);
+  case SendMessage(SCI_GETCODEPAGE) of
+    SC_CP_UTF8:
+      Result := UTF8Decode(Chars)
+    else
+      Result := WideString(UTF8Encode(Chars))
+  end;
 end;
 
 { ------------------------------------------------------------------------------------------------ }

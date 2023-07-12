@@ -499,7 +499,7 @@ type
   TReplaceFunc = function(Scope: TEntityReplacementScope = ersSelection): Integer;
 var
   doc: TActiveDocument;
-  anchor, caret: Sci_Position;
+  anchor, caret, nextCaretPos: Sci_Position;
   ch, charOffset: Integer;
   didReplace: Boolean;
 
@@ -555,14 +555,23 @@ begin
     if (ch in [$0A, $0D]) then // ENTER was pressed
       doc.CurrentPosition := doc.NextLineStartPosition
     else begin
+      nextCaretPos := doc.SendMessage(SCI_POSITIONAFTER, doc.CurrentPosition);
+      // stay in current line if at EOL
+      if (nextCaretPos >= doc.NextLineStartPosition) then
+        Exit;
       // no inserted char, nothing to offset
       if (Cmd > dcAuto) then charOffset := -1;
-      doc.CurrentPosition := doc.SendMessage(SCI_POSITIONAFTER, doc.CurrentPosition) + charOffset;
+      doc.CurrentPosition := nextCaretPos + charOffset;
     end;
   end else begin
     // place caret after inserted char
-    if (Cmd = dcAuto) then Inc(caret);
+    if (Cmd = dcAuto) then begin
+      Inc(caret);
+      if (ch = $0A) and (doc.SendMessage(SCI_GETEOLMODE) = SC_EOL_CRLF) then
+        Inc(caret);
+    end;
     doc.Selection.ClearSelection;
+    doc.CurrentPosition := caret;
   end;
 end;
 
