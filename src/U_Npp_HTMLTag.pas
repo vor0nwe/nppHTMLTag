@@ -499,8 +499,8 @@ type
   TReplaceFunc = function(Scope: TEntityReplacementScope = ersSelection): Integer;
 var
   doc: TActiveDocument;
-  anchor, caret, nextCaretPos: Sci_Position;
-  ch, charOffset: Integer;
+  anchor, caret, selStart, nextCaretPos: Sci_Position;
+  ch, charOffset, chValue: Integer;
   didReplace: Boolean;
 
   function Replace(Func: TReplaceFunc; Doc: TActiveDocument; Start: Sci_Position; EndPos: Sci_Position): Boolean;
@@ -542,7 +542,15 @@ begin
       end;
       $5C {'\'}: begin
           if (Options.LiveUnicodeDecoding or (cmd = dcUnicode)) then begin
-            didReplace := Replace(@(U_JSEncode.DecodeJS), doc, anchor, caret);
+            selStart := anchor;
+            // backtrack to previous codepoint, in case it's part of a multi-byte glyph
+            if Integer(doc.SendMessage(SCI_GETCHARAT, anchor - 6)) = $5C then begin
+              doc.Select(anchor - 6, 6);
+              chValue := StrToInt(Format('$%s', [Copy(doc.Selection.Text, 3, 4)]));
+              if (chValue >= $D800) and (chValue <= $DBFF) then
+                Dec(selStart, 6);
+            end;
+            didReplace := Replace(@(U_JSEncode.DecodeJS), doc, selStart, caret);
             // compensate for both characters of '\u' prefix
             Inc(charOffset);
             Break;
