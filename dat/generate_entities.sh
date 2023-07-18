@@ -7,7 +7,7 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 #
 ENTITIES="$(dirname "$0")/HTMLTag-entities.ini"
-EXCLUSIONS='(AMP|bne|bsol|colon|COPY|DD|ENG|equals|ETH|excl|fjlig|GT|lpar|LT|NewLine|nvgt|nvlt|period|QUOT|REG|rpar|sol|Tab|THORN|TRADE)'
+EXCLUSIONS='(AMP|bne|bsol|colon|COPY|commat|DD|dollar|ENG|equals|ETH|excl|fjlig|GT|lpar|LT|NewLine|nvgt|nvlt|period|QUOT|quest|REG|rpar|sol|Tab|THORN|TRADE)'
 
 cat<<-INI > $ENTITIES
 [HTML 5]

@@ -2,6 +2,13 @@ h2. Changes since v1.1
 
 h3. Released Versions
 
+* 1.4.0 (2023-07-18)
+** Changed: upgrade entity mappings to the HTML 5 specification [fccd1a0]
+** Changed: keep the entities file in a subfolder of the plugin config directory [34ae163]
+** Changed: remap some default shortcuts to avoid conflicts [a1f25bb]
+** Added: decode multibyte glyphs and emoji [8e66ddb]
+** Added: automatically decode entities/escape characters when typing, or on command when the caret is adjacent [85442c3], [85442c3]
+
 * 1.3.7 (2023-03-16)
 ** Fixed: draw the About dialog with padded dimensions for N++ 8.4.9 and later [c4d621b]
 ** Changed: copy HTML entities to the user's @Config@ directory for easier access and editing [b7ea8a5]
