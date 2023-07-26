@@ -44,6 +44,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure commandFindMatchingTag;
+    procedure commandSelectMatchingTags;
     procedure commandSelectTagContents;
     procedure commandSelectTagContentsOnly;
     procedure commandEncodeEntities(const InclLineBreaks: Boolean = False);
@@ -68,6 +69,7 @@ type
   end;
 
 procedure _commandFindMatchingTag(); cdecl;
+procedure _commandSelectMatchingTags(); cdecl;
 procedure _commandSelectTagContents(); cdecl;
 procedure _commandSelectTagContentsOnly(); cdecl;
 procedure _commandEncodeEntities(); cdecl;
@@ -96,6 +98,11 @@ uses
 procedure _commandFindMatchingTag(); cdecl;
 begin
   npp.commandFindMatchingTag;
+end;
+{ ------------------------------------------------------------------------------------------------ }
+procedure _commandSelectMatchingTags(); cdecl;
+begin
+  npp.commandSelectMatchingTags;
 end;
 { ------------------------------------------------------------------------------------------------ }
 procedure _commandSelectTagContents(); cdecl;
@@ -171,6 +178,9 @@ begin
 
   sk := self.MakeShortcutKey(False, True, False, 'T'); // Alt-T
   self.AddFuncItem('&Find matching tag', _commandFindMatchingTag, sk);
+
+  sk := self.MakeShortcutKey(False, True, False, #113); // Alt-F2
+  self.AddFuncItem('Select &matching tags', _commandSelectMatchingTags, sk);
 
   sk := self.MakeShortcutKey(False, True, True, 'T'); // Alt-Shift-T
   self.AddFuncItem('&Select tag and contents', _commandSelectTagContents, sk);
@@ -309,11 +319,25 @@ begin
     Exit;
 {$ENDIF}
   try
-    U_HTMLTagFinder.FindMatchingTag(False, False);
+    U_HTMLTagFinder.FindMatchingTag;
   except
     HandleException(ExceptObject, ExceptAddr);
   end;
 end {TNppPluginHTMLTag.commandFindMatchingTag};
+
+{ ------------------------------------------------------------------------------------------------ }
+procedure TNppPluginHTMLTag.commandSelectMatchingTags;
+begin
+{$IFDEF CPUX64}
+  if not SupportsBigFiles then
+    Exit;
+{$ENDIF}
+  try
+    U_HTMLTagFinder.FindMatchingTag([soTags]);
+  except
+    HandleException(ExceptObject, ExceptAddr);
+  end;
+end {TNppPluginHTMLTag.commandSelectMatchingTags};
 
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.commandSelectTagContents;
@@ -323,7 +347,7 @@ begin
     Exit;
 {$ENDIF}
   try
-    U_HTMLTagFinder.FindMatchingTag(True, False);
+    U_HTMLTagFinder.FindMatchingTag([soContents, soTags]);
   except
     HandleException(ExceptObject, ExceptAddr);
   end;
@@ -337,7 +361,7 @@ begin
     Exit;
 {$ENDIF}
   try
-    U_HTMLTagFinder.FindMatchingTag(True, True);
+    U_HTMLTagFinder.FindMatchingTag([soContents]);
   except
     HandleException(ExceptObject, ExceptAddr);
   end;

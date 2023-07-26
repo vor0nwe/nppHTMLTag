@@ -13,7 +13,8 @@ interface
   uses
     NppSimpleObjects;
 
-  procedure FindMatchingTag(ASelect: boolean = False; AContentsOnly: Boolean = False);
+  type TSelectionOptions = set of (soNone, soTags, soContents);
+  procedure FindMatchingTag(SelectionOptions: TSelectionOptions = [soNone]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
@@ -141,7 +142,7 @@ begin
 end {ExtractTagName};
 
 { ------------------------------------------------------------------------------------------------ }
-procedure FindMatchingTag(ASelect: boolean = False; AContentsOnly: Boolean = False);
+procedure FindMatchingTag(SelectionOptions: TSelectionOptions);
 var
   npp: TApplication;
   doc: TActiveDocument;
@@ -150,9 +151,9 @@ var
   Tag, NextTag, MatchingTag, Target: TTextRange;
   TagName: string;
   TagOpens, TagCloses: boolean;
-
+  InitPos: Sci_Position;
   Direction: TDirectionEnum;
-  IsXML: boolean;
+  IsXML, ASelect, AContentsOnly, TagsOnly: boolean;
   DisposeOfTag: boolean;
   i: integer;
   Found: TTextRange;
@@ -184,14 +185,41 @@ var
     end;
   end;
   // ---------------------------------------------------------------------------------------------
-var
-  InitPos: Sci_Position;
+  procedure SelectTags(Tag, MatchingTag: TTextRange);
+  var
+    Doc: TActiveDocument;
+    TagAttrPos: Integer;
+  begin
+    Doc := Tag.Document;
+    // Trim attributes from tag selection
+    TagAttrPos := Pos(' ', Tag.Text);
+    if TagAttrPos > Pos('<', Tag.Text) then
+      Tag.EndPos := Tag.StartPos + TagAttrPos;
+    // Trim '<' or '</' and '>' from selection
+    if not Assigned(MatchingTag) then begin
+      // Narrow selection for a self-closing tag
+      Tag.StartPos := Tag.StartPos + Pos('<', Tag.Text);
+      if Pos('/>', Tag.Text) > 0 then
+        Tag.EndPos := Tag.EndPos - 1;
+    end else
+      Tag.StartPos := Tag.StartPos + (Pos('/', Tag.Text) shr 1) + 1;
+    Doc.SendMessage(SCI_SETSELECTION, Tag.StartPos, Tag.EndPos - 1);
+    if Assigned(MatchingTag) then begin
+      TagAttrPos := Pos(' ', MatchingTag.Text);
+      if TagAttrPos > Pos('<', MatchingTag.Text) then
+        MatchingTag.EndPos := MatchingTag.StartPos + TagAttrPos;
+      Doc.SendMessage(SCI_ADDSELECTION, MatchingTag.StartPos + (Pos('/', MatchingTag.Text) shr 1) + 1, MatchingTag.EndPos - 1);
+    end;
+  end;
+  // ---------------------------------------------------------------------------------------------
 begin
   npp := GetApplication();
   doc := npp.ActiveDocument;
 
   IsXML := (doc.Language = L_XML);
-
+  ASelect := not (soNone in SelectionOptions);
+  AContentsOnly := ASelect and ([soContents] = SelectionOptions);
+  TagsOnly := ASelect and (not (soContents in SelectionOptions));
   Tags := TStringList.Create;
   MatchingTag := nil;
   NextTag := nil;
@@ -298,8 +326,10 @@ begin
       Tags.LineBreak := #9;
       if Assigned(MatchingTag) then begin
         if Tags.Count = 2 then begin
+          // Matching tag may be hidden by a fold
+          doc.SendMessage(SCI_FOLDLINE, doc.SendMessage(SCI_LINEFROMPOSITION, MatchingTag.StartPos), SC_FOLDACTION_EXPAND);
           Tag := TTextRange(Tags.Objects[0]);
-          if ASelect then begin
+          if ASelect and not TagsOnly then begin
             if Tag.StartPos < MatchingTag.StartPos then begin
               if AContentsOnly then begin
                 Target := doc.GetRange(Tag.EndPos, MatchingTag.StartPos);
@@ -336,12 +366,14 @@ begin
             finally
               Target.Free;
             end;
+          end else if ASelect then begin
+            SelectTags(Tag, MatchingTag);
           end else begin
             MatchingTag.Select;
           end;
-        end else begin
-          if ASelect then begin
-            MatchingTag.Select;
+        end else begin  // Self-closing tag
+          if TagsOnly then begin
+            SelectTags(MatchingTag, nil);
           end else begin
             MatchingTag.Select;
           end;
