@@ -18,8 +18,8 @@ if %errorlevel%==1 ( goto :USAGE )
 
 :Release
 del /S /Q /F out\*.zip 2>NUL:
-:Debug
 
+:Debug
 call %~dp0src\Forms\suppress_ole_init.cmd
 if %errorlevel%==2 (
   echo Patch failed

@@ -78,7 +78,8 @@ Restart Notepad++ if it's already running.
 
 h2. Usage
 
-| Alt+T | to select the matching tag |
+| Alt+T  | to select the matching tag |
+| Alt+F2 | to select both matching tags -- edits will be synchronized while the multiple selections are active |
 | Alt+Shift+T | to select both tags and the entire contents in between |
 | Ctrl+Alt+T | to select only the contents between tags |
 | Ctrl+E | to encode all selected non-ASCII characters to their HTML entities |
@@ -133,17 +134,18 @@ h3. To do
   Use the "builtin Notepad++ feature":autoclose
 * Add command to encode entities in the contents only (only apply encoding when not inside tags;
   leave valid tags and entities alone)
-* Add command to select tags only (and leave the contents out of the selection)
+* -Add command to select tags only (and leave the contents out of the selection)-
+  Added in "1.4.1":https://bitbucket.org/rdipardo/htmltag/src/v1.4.1/NEWS.textile
 * Make it play nice(r) with PHP & ASP tags (either highlight those separately or ignore them)
 * -Add option to encode entities 'as-you-type'- Added in "1.4.0":https://bitbucket.org/rdipardo/htmltag/src/v1.4.0/NEWS.textile
 * -Add option to close tags 'as-you-type' (type '&lt;/' and the rest will be inserted automagically)-
   Not needed if "tag auto-closing":autoclose is enabled in Notepad++
-* "[Request#2147949]":2147949 drop down a list of tags after '&lt;'
-* "[Request#2147949]":2147949 drop down a list of attributes on space after a tag
-
+* -drop down a list of tags after '&lt;'-
+* -drop down a list of attributes on space after a tag-
+  Notepad++ can "auto-complete":autocomplete many (X/HT)ML keywords
 
 [689eef6cee]https://fossil.2of4.net/npp_htmltag/info/689eef6cee
 [e717ed1de5]https://fossil.2of4.net/npp_htmltag/info/e717ed1de5
-[2147949]https://fossil.2of4.net/npp_htmltag/tktview?name=43695affda
 [autoclose]https://npp-user-manual.org/docs/preferences/#auto-completion
+[autocomplete]https://npp-user-manual.org/docs/auto-completion/#how-to-make-it-work
 [pl-admin]https://npp-user-manual.org/docs/plugins/#install-using-plugins-admin
