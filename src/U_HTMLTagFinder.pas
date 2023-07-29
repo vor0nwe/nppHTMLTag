@@ -4,7 +4,8 @@ interface
   uses
     NppSimpleObjects;
 
-  procedure FindMatchingTag(ASelect: boolean = False; AContentsOnly: Boolean = False);
+  type TSelectionOptions = set of (soNone, soTags, soContents);
+  procedure FindMatchingTag(SelectionOptions: TSelectionOptions = [soNone]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
@@ -36,7 +37,6 @@ var
   EndIndex: integer;
   {InnerLevel: integer;}
   ClosureFound: boolean;
-  ExtraChar: AnsiChar;
 begin
   ATagName := '';
   TagEnd := TTextRange.Create(AView);
@@ -83,7 +83,7 @@ begin
   StartIndex := 0;
   EndIndex := 0;
   ATagName := Result.Text;
-  ExtraChar := #0;
+
   for i := 2 to Length(ATagName) - 1 do begin
     // Exit early when it's obviously a self-closing tag
     if (CompareStr(Copy(ATagName, i), '/>') = 0) then begin
@@ -102,11 +102,7 @@ begin
         end;
       end;
     end else if EndIndex = 0 then begin
-{$IFDEF UNICODE}
-      if not CharInSet(ATagName[i], ['0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '.', ':', ExtraChar]) then begin
-{$ELSE}
-      if not (ATagName[i] in ['0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '.', ':', ExtraChar]) then begin
-{$ENDIF}
+      if not CharInSet(ATagName[i], ['0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '.', ':', #0]) then begin
         EndIndex := i - 1;
         if AClosing = True then begin
           break;
@@ -115,11 +111,7 @@ begin
     end else begin
       if ATagName[i] = '/' then begin
         ClosureFound := True;
-{$IFDEF UNICODE}
       end else if ClosureFound and not CharInSet(ATagName[i], [' ', #9, #13, #10]) then begin
-{$ELSE}
-      end else if ClosureFound and not (ATagName[i] in [' ', #9, #13, #10]) then begin
-{$ENDIF}
         ClosureFound := False;
       end;
     end;
@@ -132,7 +124,7 @@ begin
 end {ExtractTagName};
 
 { ------------------------------------------------------------------------------------------------ }
-procedure FindMatchingTag(ASelect: boolean = False; AContentsOnly: Boolean = False);
+procedure FindMatchingTag(SelectionOptions: TSelectionOptions);
 var
   npp: TApplication;
   doc: TActiveDocument;
@@ -141,9 +133,9 @@ var
   Tag, NextTag, MatchingTag, Target: TTextRange;
   TagName: string;
   TagOpens, TagCloses: boolean;
-
+  InitPos: Sci_Position;
   Direction: TDirectionEnum;
-  IsXML: boolean;
+  IsXML, ASelect, AContentsOnly, TagsOnly: boolean;
   DisposeOfTag: boolean;
   i: integer;
   Found: TTextRange;
@@ -175,14 +167,39 @@ var
     end;
   end;
   // ---------------------------------------------------------------------------------------------
-var
-  InitPos: Sci_Position;
+  procedure SelectTags(Tag, MatchingTag: TTextRange);
+  var
+    TagAttrPos: Integer;
+  begin
+    // Trim attributes from tag selection
+    TagAttrPos := Pos(' ', Tag.Text);
+    if TagAttrPos > Pos('<', Tag.Text) then
+      Tag.EndPos := Tag.StartPos + TagAttrPos;
+    // Trim '<' or '</' and '>' from selection
+    if not Assigned(MatchingTag) then begin
+      // Narrow selection for a self-closing tag
+      Tag.StartPos := Tag.StartPos + Pos('<', Tag.Text);
+      if Pos(WideString('/>'), Tag.Text) > 0 then
+        Tag.EndPos := Tag.EndPos - 1;
+    end else
+      Tag.StartPos := Tag.StartPos + (Pos('/', Tag.Text) shr 1) + 1;
+    Doc.SendMessage(SCI_SETSELECTION, Tag.StartPos, Tag.EndPos - 1);
+    if Assigned(MatchingTag) then begin
+      TagAttrPos := Pos(' ', MatchingTag.Text);
+      if TagAttrPos > Pos('<', MatchingTag.Text) then
+        MatchingTag.EndPos := MatchingTag.StartPos + TagAttrPos;
+      Doc.SendMessage(SCI_ADDSELECTION, MatchingTag.StartPos + (Pos('/', MatchingTag.Text) shr 1) + 1, MatchingTag.EndPos - 1);
+    end;
+  end;
+  // ---------------------------------------------------------------------------------------------
 begin
   npp := GetApplication();
   doc := npp.ActiveDocument;
 
   IsXML := (doc.Language = L_XML);
-
+  ASelect := not (soNone in SelectionOptions);
+  AContentsOnly := ASelect and ([soContents] = SelectionOptions);
+  TagsOnly := ASelect and (not (soContents in SelectionOptions));
   Tags := TStringList.Create;
   MatchingTag := nil;
   NextTag := nil;
@@ -289,8 +306,10 @@ begin
       Tags.LineBreak := #9;
       if Assigned(MatchingTag) then begin
         if Tags.Count = 2 then begin
+          // Matching tag may be hidden by a fold
+          doc.SendMessage(SCI_FOLDLINE, doc.SendMessage(SCI_LINEFROMPOSITION, MatchingTag.StartPos), SC_FOLDACTION_EXPAND);
           Tag := TTextRange(Tags.Objects[0]);
-          if ASelect then begin
+          if ASelect and not TagsOnly then begin
             if Tag.StartPos < MatchingTag.StartPos then begin
               if AContentsOnly then begin
                 Target := doc.GetRange(Tag.EndPos, MatchingTag.StartPos);
@@ -327,12 +346,14 @@ begin
             finally
               Target.Free;
             end;
+          end else if ASelect then begin
+            SelectTags(Tag, MatchingTag);
           end else begin
             MatchingTag.Select;
           end;
-        end else begin
-          if ASelect then begin
-            MatchingTag.Select;
+        end else begin  // Self-closing tag
+          if TagsOnly then begin
+            SelectTags(MatchingTag, nil);
           end else begin
             MatchingTag.Select;
           end;
@@ -364,7 +385,6 @@ begin
     FreeAndNil(NextTag);
   end;
 
-  //MessageBox(npp.WindowHandle, PChar('Current tag: ' + TagName), scPTitle, MB_ICONINFORMATION);
 end;
 
 end.

@@ -22,7 +22,7 @@ uses
   U_Npp_HTMLTag in '..\U_Npp_HTMLTag.pas',
   L_VersionInfoW in '..\common\L_VersionInfoW.pas',
   L_SpecialFolders in '..\common\L_SpecialFolders.pas',
-  RegExpr in '..\common\RegExpr.pas',
+  Utf8IniFiles in '..\common\Utf8IniFiles.pas',
   NppSimpleObjects in '..\LibNppPlugin\NppSimpleObjects.pas',
   NppPluginInterface in '..\LibNppPlugin\NppPluginInterface.pas',
   nppplugin in '..\lib\nppplugin.pas',

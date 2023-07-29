@@ -3,10 +3,11 @@ unit U_JSEncode;
 interface
 uses
   Classes,
+  U_Entities,
   NppSimpleObjects;
 
 type
-  TEntityReplacementScope = (ersSelection, ersDocument, ersAllDocuments);
+  TEntityReplacementScope = U_Entities.TEntityReplacementScope;
 
 procedure EncodeJS(Scope: TEntityReplacementScope = ersSelection);
 function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
@@ -15,12 +16,11 @@ function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
 implementation
 uses
   SysUtils,
-//  L_DebugLogger,
   SciSupport;
 
 { ------------------------------------------------------------------------------------------------ }
 type
-  TConversionMethod = function(var Text: WideString): Integer;
+  TTextRange = NppSimpleObjects.TTextRange;
   TRangeConversionMethod = function(const TextRange: TTextRange): Integer;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -91,6 +91,7 @@ begin
   Result := DoEncodeJS(Text);
   if Result > 0 then begin
     Range.Text := Text;
+    Range.ClearSelection;
   end;
 end{DoEncodeJS};
 
@@ -105,7 +106,9 @@ function DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;
 var
   npp: TApplication;
   doc: TActiveDocument;
-  Target, Match: TTextRange;
+  Target, Match, MatchNext: TTextRange;
+  HiByte, LoByte: Cardinal;
+  EmojiChars: array [0..1] of WideChar;
 begin
   Result := 0;
 
@@ -116,22 +119,46 @@ begin
   Match := TTextRange.Create(doc);
   try
     repeat
-      doc.Find('\\u[0-9A-F][0-9A-F][0-9A-F][0-9A-F]', Match, SCFIND_REGEXP, Target.StartPos, Target.EndPos);
+      doc.Find('\\u[0-9A-F]{4}', Match, SCFIND_REGEXP, Target.StartPos, Target.EndPos);
       if Match.Length <> 0 then begin
         // Adjust the target already
         Target.StartPos := Match.StartPos + 1;
 
         // replace this match's text by the appropriate Unicode character
-        Match.Text := WideChar(StrToInt(Format('$%s', [Copy(Match.Text, 3, 4)])));
+        HiByte := StrToInt(Format('$%s', [Copy(Match.Text, 3, 4)]));
 
+        // check if code point belongs to a multi-byte glyph
+        if (HiByte >= $D800) and (HiByte <= $DBFF) then
+        begin
+          try
+            MatchNext := TTextRange.Create(doc);
+            doc.Find('\\u[0-9A-F]{4}', MatchNext, SCFIND_REGEXP, Match.EndPos-2, Target.EndPos);
+            if MatchNext.Length <> 0 then
+            begin
+              LoByte := StrToInt(Format('$%s', [Copy(MatchNext.Text, 3, 4)]));
+              // erase tail character
+              MatchNext.Text := EmptyWideStr;
+              EmojiChars[0] := WideChar(LoByte);
+              EmojiChars[1] := WideChar(HiByte);
+              Match.Text := WideCharToString(EmojiChars);
+              if (Result < 1) then doc.Selection.StartPos := Match.StartPos;
+            end;
+          finally
+            MatchNext.Free;
+          end;
+        end else
+          Match.Text := WideChar(HiByte);
+
+        if (Result < 1) then doc.Selection.StartPos := Match.StartPos;
         Inc(Result);
       end;
     until Match.Length = 0;
+
+    if Result > 0 then doc.Selection.ClearSelection;
   finally
     Target.Free;
     Match.Free;
   end;
-//DebugWrite('DecodeJS', Format('Result: %d replacements', [Result]));
 end{DecodeJS};
 
 
@@ -141,4 +168,3 @@ initialization
 finalization
 
 end.
-

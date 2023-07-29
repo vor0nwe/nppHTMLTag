@@ -3,6 +3,7 @@ unit U_Entities;
 interface
 uses
   Classes,
+  IniFiles,
   NppSimpleObjects;
 
 type
@@ -10,35 +11,33 @@ type
   TEntityReplacementOption = (eroEncodeLineBreaks);
   TEntityReplacementOptions = set of TEntityReplacementOption;
 
-procedure EncodeEntities(const Scope: TEntityReplacementScope = ersSelection; const Options: TEntityReplacementOptions = []);
-function  DoEncodeEntities(var Text: WideString; const Entities: TStringList; const Options: TEntityReplacementOptions): Integer;
+procedure EncodeEntities(Scope: TEntityReplacementScope = ersSelection; const Options: TEntityReplacementOptions = []);
+function  DoEncodeEntities(var Text: WideString; const Entities: THashedStringList; const Options: TEntityReplacementOptions): Integer;
 
-procedure DecodeEntities(const Scope: TEntityReplacementScope = ersSelection);
+function DecodeEntities(Scope: TEntityReplacementScope = ersSelection): Integer;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
 uses
   SysUtils, Windows, StrUtils,
-//  L_DebugLogger,
   NppPlugin,
+  U_Npp_HTMLTag,
+  Utf8IniFiles,
   L_SpecialFolders;
 
 var
   EntityLists: TStringList;
-  MaxEntityLength: integer;
 
 { ------------------------------------------------------------------------------------------------ }
-function LoadEntities(ANpp: TApplication; ASet: string = 'HTML 4'): TStringList;
+function LoadEntities(ANpp: TNppPluginHTMLTag; ASet: string = 'HTML 5'): THashedStringList;
 var
-  IniFile: string;
+  Mappings: TUtf8IniFile;
+  IniFile: WideString;
   Lines: TStringList;
-  Line, Value, Entity: string;
-  i, Separation, CodePoint: integer;
-  Reading: boolean;
-  ErrMsg: string;
+  Line, Value: string;
+  i, CodePoint: integer;
+  ErrMsg: WideString;
 begin
-//  DebugWrite('LoadEntities', Format('Set "%s"', [ASet]));
-
   if not Assigned(EntityLists) then begin
     EntityLists := TStringList.Create;
     EntityLists.CaseSensitive := False;
@@ -46,20 +45,20 @@ begin
 
   i := EntityLists.IndexOf(ASet);
   if i >= 0 then begin
-    Result := TStringList(EntityLists.Objects[i]);
+    Result := THashedStringList(EntityLists.Objects[i]);
   end else begin
-    IniFile := IncludeTrailingPathDelimiter(GetApplication.ConfigFolder) + 'HTMLTag-entities.ini';
-    ErrMsg := Format('HTMLTag-entities.ini must be saved to'#13#10'%s', [ExtractFileDir(IniFile)]);
+    IniFile := ANpp.Entities;
+    ErrMsg := WideFormat('%s must be saved in'#13#10'%s', [ExtractFileName(IniFile), ExtractFileDir(IniFile)]);
     if not FileExists(IniFile) then
-      IniFile := ChangeFilePath(IniFile, TSpecialFolders.DLL);
-      ErrMsg := Concat(ErrMsg, Format(#13#10'or to'#13#10'%s', [ExtractFileDir(IniFile)]));
+      IniFile := Npp.DefaultEntitiesPath;
+      ErrMsg := Concat(ErrMsg, WideFormat(#13#10'or %s in'#13#10'%s', [ExtractFileName(IniFile), TSpecialFolders.DLL]));
     if not FileExists(IniFile) then begin
-      MessageBox(ANpp.WindowHandle, PChar(ErrMsg), PChar('Missing Entities File'), MB_ICONERROR);
+      MessageBoxW(ANpp.App.WindowHandle, PWideChar(ErrMsg), PWideChar('Missing Entities File'), MB_ICONERROR);
       FreeAndNil(EntityLists);
       Result := nil;
       Exit;
     end else begin
-      Result := TStringList.Create;
+      Result := THashedStringList.Create;
       Result.NameValueSeparator := '=';
       Result.CaseSensitive := True;
       Result.Duplicates := dupIgnore;
@@ -70,57 +69,35 @@ begin
       try
         Lines.CaseSensitive := True;
         Lines.Duplicates := dupAccept;
-        Lines.LoadFromFile(IniFile);
-
-//        DebugWrite('LoadEntities', Format('Lines loaded: %d', [Lines.Count]));
-
-        Reading := False;
-        for i := 0 to Lines.Count - 1 do begin
-          Line := Trim(Lines[i]);
-          Separation := Pos(';', Line);
-          if Separation > 0 then begin
-            Line := TrimRight(Copy(Line, 1, Separation - 1));
-          end;
-          if (Length(Line) > 0) and (Line[1] = '[') and (Line[Length(Line)] = ']') then begin
-            // New section
-            Value := Trim(Copy(Line, 2, Length(Line) - 2));
-            Reading := SameText(Value, ASet);
-
-          end else if Reading then begin
-            // New entity?
-            Separation := Pos('=', Line);
-            if Separation > 0 then begin
-              Entity := Copy(Line, 1, Separation - 1);
-              if Length(Entity) > MaxEntityLength then begin
-                MaxEntityLength := Length(Entity);
-              end;
-
-              Value := Trim(Copy(Line, Separation + 1));
-              if TryStrToInt(Value, CodePoint) then begin
-                Result.AddObject(Lines[i], TObject(CodePoint));
-              end;
-            end;
+        Mappings := TUtf8IniFile.Create(IniFile);
+        Mappings.ReadSection(ASet, Lines);
+        for Line in Lines do begin
+          Value := Mappings.ReadString(ASet, Line, EmptyStr);
+          i := Pos(';', Value) - 1;
+          if i <= 0 then i := Length(Value);
+          if TryStrToInt(Trim(Copy(Value, 0, i)), CodePoint) then begin
+            Result.AddPair(Line, IntToStr(CodePoint));
+            Result.AddPair(IntToStr(CodePoint), Line);
           end;
         end;
       finally
         FreeAndNil(Lines);
+        FreeAndNil(Mappings);
       end;
 
-//      DebugWrite('LoadEntities', Format('%d entities loaded', [Result.Count]));
     end;
   end;
 end{LoadEntities};
 
 
 { ------------------------------------------------------------------------------------------------ }
-procedure EncodeEntities(const Scope: TEntityReplacementScope; const Options: TEntityReplacementOptions);
+procedure EncodeEntities(Scope: TEntityReplacementScope; const Options: TEntityReplacementOptions);
 var
-  npp: TApplication;
   doc: TActiveDocument;
   DocIndex: Integer;
   Text: WideString;
   { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
-  function FetchEntities: TStringList;
+  function FetchEntities: THashedStringList;
   begin
     if doc.Language = L_XML then begin
       Result := LoadEntities(npp, 'XML');
@@ -130,11 +107,10 @@ var
   end;
   { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 begin
-  npp := GetApplication();
 
   case Scope of
     ersDocument: begin
-      doc := npp.ActiveDocument;
+      doc := npp.App.ActiveDocument;
       Text := doc.Text;
       if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
         doc.Text := Text;
@@ -142,8 +118,8 @@ begin
     end;
 
     ersAllDocuments: begin
-      for DocIndex := 0 to npp.Documents.Count - 1 do begin
-        doc := npp.Documents[DocIndex].Activate;
+      for DocIndex := 0 to npp.App.Documents.Count - 1 do begin
+        doc := npp.App.Documents[DocIndex].Activate;
         Text := doc.Text;
         if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
           doc.Text := Text;
@@ -152,17 +128,18 @@ begin
     end;
 
     else begin // ersSelection
-      doc := npp.ActiveDocument;
+      doc := npp.App.ActiveDocument;
       Text := doc.Selection.Text;
       if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
         doc.Selection.Text := Text;
+        doc.Selection.ClearSelection;
       end;
     end;
   end{case};
 end{EncodeEntities};
 
 { ------------------------------------------------------------------------------------------------ }
-function DoEncodeEntities(var Text: WideString; const Entities: TStringList; const Options: TEntityReplacementOptions): Integer;
+function DoEncodeEntities(var Text: WideString; const Entities: THashedStringList; const Options: TEntityReplacementOptions): Integer;
 var
   CharIndex, EntityIndex: integer;
   ReplaceEntity: boolean;
@@ -175,17 +152,18 @@ begin
     Exit;
   end;
 
+  EncodedEntity := '';
   for CharIndex := Length(Text) downto 1 do begin
-    EntityIndex := Entities.IndexOfObject(TObject(integer(Ord(Text[CharIndex]))));
+    EntityIndex := Entities.IndexOfName(IntToStr(integer(Ord(Text[CharIndex]))));
     if EntityIndex > -1 then begin
       ReplaceEntity := True;
-      EncodedEntity := Entities.Names[EntityIndex];
+      EncodedEntity := UTF8Decode(Entities.ValueFromIndex[EntityIndex]);
     end else if Ord(Text[CharIndex]) > 127 then begin
       ReplaceEntity := True;
-      EncodedEntity := '#' + IntToStr(Ord(Text[CharIndex]));
+      EncodedEntity := WideFormat('#%s', [IntToStr(Ord(Text[CharIndex]))]);
     end else if (eroEncodeLineBreaks in Options) and (Ord(Text[CharIndex]) in [10, 13]) then begin
       ReplaceEntity := True;
-      EncodedEntity := '#' + IntToStr(Ord(Text[CharIndex]));
+      EncodedEntity := WideFormat('#%s', [IntToStr(Ord(Text[CharIndex]))]);
     end else begin
       ReplaceEntity := False;
     end;
@@ -200,15 +178,14 @@ begin
 end;
 
 { ------------------------------------------------------------------------------------------------ }
-procedure DecodeEntities(const Scope: TEntityReplacementScope = ersSelection);
+function DecodeEntities(Scope: TEntityReplacementScope = ersSelection): Integer;
 const
   scDigits = '0123456789';
   scHexLetters = 'ABCDEFabcdef';
   scLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 var
-  npp: TApplication;
   doc: TActiveDocument;
-  Entities: TStringList;
+  Entities: THashedStringList;
   Text: WideString;
   CharIndex, EntityIndex: integer;
   EntitiesReplaced: integer;
@@ -219,9 +196,9 @@ var
   CodePoint: integer;
 begin
   EntitiesReplaced := 0;
+  Result := EntitiesReplaced;
 
-  npp := GetApplication();
-  doc := npp.ActiveDocument;
+  doc := npp.App.ActiveDocument;
   if doc.Language = L_XML then begin
     Entities := LoadEntities(npp, 'XML');
   end else begin
@@ -232,10 +209,13 @@ begin
     Exit;
 
   Text := doc.Selection.Text;
-
   CharIndex := Pos('&', Text);
+
+  // make sure the selection includes the semicolon
+  if not (Pos(';', Text) > CharIndex) then
+    Exit;
+
   while CharIndex > 0 do begin
-//DebugWrite('DecodeEntities', Format('Found start at %d: "%s"', [CharIndex, Copy(Text, CharIndex, 10) + '...']));
     FirstPos := CharIndex;
     LastPos := FirstPos;
     NextIndex := Length(Text) + 1;
@@ -246,7 +226,7 @@ begin
         0: begin
           AllowedChars := '#' + scLetters + ';';
         end;
-        1: begin 
+        1: begin
           if Text[FirstPos + 1] = '#' then begin
             IsNumeric := True;
             AllowedChars := 'x' + scDigits;
@@ -289,18 +269,17 @@ begin
       end;
     end;
 
-//DebugWrite('DecodeEntities', Format('FirstPos: %d; LastPos: %d; Entity: "%s"; NextIndex: %d; IsNumeric: %d; IsHex: %d', [FirstPos, LastPos, Copy(Text, FirstPos + 1, LastPos - FirstPos), NextIndex, integer(IsNumeric), integer(IsHex)]));
     if IsNumeric then begin
       if IsHex then begin
-        IsValid := TryStrToInt('$' + Copy(Text, FirstPos + 3, LastPos - FirstPos - 2), CodePoint);
+        IsValid := TryStrToInt(Format('$%s', [Copy(Text, FirstPos + 3, LastPos - FirstPos - 2)]), CodePoint);
       end else begin
-        IsValid := TryStrToInt(Copy(Text, FirstPos + 2, LastPos - FirstPos - 1), CodePoint);
+        IsValid := TryStrToInt(Format('%s', [Copy(Text, FirstPos + 2, LastPos - FirstPos - 1)]), CodePoint);
       end;
     end else begin
-      Entity := Copy(Text, FirstPos + 1, LastPos - FirstPos);
+      Entity := UTF8Encode(Copy(Text, FirstPos + 1, LastPos - FirstPos));
       EntityIndex := Entities.IndexOfName(Entity);
       if EntityIndex > -1 then begin
-        CodePoint := integer(Entities.Objects[EntityIndex]);
+        CodePoint := StrToInt(Entities.ValueFromIndex[EntityIndex]);
         IsValid := True;
       end else begin
         CodePoint := 0;
@@ -321,12 +300,14 @@ begin
       Break;
     end;
     CharIndex := CharIndex;
-//DebugWrite('DecodeEntities', Format('NextIndex: %d; CharIndex: %d', [NextIndex, CharIndex]));
   end;
 
   if EntitiesReplaced > 0 then begin
     doc.Selection.Text := Text;
+    doc.Selection.ClearSelection;
   end;
+
+  Result := EntitiesReplaced;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,12 +315,10 @@ initialization
 
 finalization
   if Assigned(EntityLists) then begin
-//    DebugWrite('Entities.finalization', 'EntityLists[].Free');
     while EntityLists.Count > 0 do begin
       EntityLists.Objects[0].Free;
       EntityLists.Delete(0);
     end;
-//    DebugWrite('Entities.finalization', 'FreeAndNil(EntityLists)');
     FreeAndNil(EntityLists);
   end;
 
