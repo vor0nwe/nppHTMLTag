@@ -46,7 +46,6 @@ var
   EndIndex: integer;
   {InnerLevel: integer;}
   ClosureFound: boolean;
-  ExtraChar: AnsiChar;
 begin
   ATagName := '';
   TagEnd := TTextRange.Create(AView);
@@ -93,7 +92,7 @@ begin
   StartIndex := 0;
   EndIndex := 0;
   ATagName := UTF8Encode(Result.Text);
-  ExtraChar := #0;
+
   for i := 2 to Length(ATagName) - 1 do begin
     // Exit early when it's obviously a self-closing tag
     if (CompareStr(Copy(ATagName, i), '/>') = 0) then begin
@@ -112,11 +111,7 @@ begin
         end;
       end;
     end else if EndIndex = 0 then begin
-{$IFDEF UNICODE}
-      if not CharInSet(ATagName[i], ['0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '.', ':', ExtraChar]) then begin
-{$ELSE}
-      if not (ATagName[i] in ['0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '.', ':', ExtraChar]) then begin
-{$ENDIF}
+      if not CharInSet(ATagName[i], ['0'..'9', 'A'..'Z', 'a'..'z', '-', '_', '.', ':', #0]) then begin
         EndIndex := i - 1;
         if AClosing = True then begin
           break;
@@ -125,11 +120,7 @@ begin
     end else begin
       if ATagName[i] = '/' then begin
         ClosureFound := True;
-{$IFDEF UNICODE}
       end else if ClosureFound and not CharInSet(ATagName[i], [' ', #9, #13, #10]) then begin
-{$ELSE}
-      end else if ClosureFound and not (ATagName[i] in [' ', #9, #13, #10]) then begin
-{$ENDIF}
         ClosureFound := False;
       end;
     end;
@@ -187,10 +178,8 @@ var
   // ---------------------------------------------------------------------------------------------
   procedure SelectTags(Tag, MatchingTag: TTextRange);
   var
-    Doc: TActiveDocument;
     TagAttrPos: Integer;
   begin
-    Doc := Tag.Document;
     // Trim attributes from tag selection
     TagAttrPos := Pos(' ', Tag.Text);
     if TagAttrPos > Pos('<', Tag.Text) then

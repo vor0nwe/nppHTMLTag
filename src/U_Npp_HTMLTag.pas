@@ -520,14 +520,14 @@ end;
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.FindAndDecode(const KeyCode: Integer; Cmd: TDecodeCmd);
 type
-  TReplaceFunc = function(Scope: TEntityReplacementScope = ersSelection): Integer;
+  TReplaceFunc = function(Scope: U_Entities.TEntityReplacementScope = ersSelection): Integer;
 var
   doc: TActiveDocument;
   anchor, caret, selStart, nextCaretPos: Sci_Position;
   ch, charOffset, chValue: Integer;
   didReplace: Boolean;
 
-  function Replace(Func: TReplaceFunc; Doc: TActiveDocument; Start: Sci_Position; EndPos: Sci_Position): Boolean;
+  function Replace(Func: TReplaceFunc; Start: Sci_Position; EndPos: Sci_Position): Boolean;
   var
     nDecoded: Integer;
   begin
@@ -560,7 +560,7 @@ begin
       0..$20: Break;
       $26 {'&'}: begin
           if (Options.LiveEntityDecoding or (cmd = dcEntity)) then begin
-            didReplace := Replace(@(U_Entities.DecodeEntities), doc, anchor, caret);
+            didReplace := Replace(@(U_Entities.DecodeEntities), anchor, caret);
             Break;
           end;
       end;
@@ -574,7 +574,7 @@ begin
               if (chValue >= $D800) and (chValue <= $DBFF) then
                 Dec(selStart, 6);
             end;
-            didReplace := Replace(@(U_JSEncode.DecodeJS), doc, selStart, caret);
+            didReplace := Replace(@(U_JSEncode.DecodeJS), selStart, caret);
             // compensate for both characters of '\u' prefix
             Inc(charOffset);
             Break;

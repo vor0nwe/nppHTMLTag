@@ -21,10 +21,10 @@ type
   TEntityReplacementOption = (eroEncodeLineBreaks);
   TEntityReplacementOptions = set of TEntityReplacementOption;
 
-procedure EncodeEntities(const Scope: TEntityReplacementScope = ersSelection; const Options: TEntityReplacementOptions = []);
+procedure EncodeEntities(Scope: TEntityReplacementScope = ersSelection; const Options: TEntityReplacementOptions = []);
 function  DoEncodeEntities(var Text: WideString; const Entities: THashedStringList; const Options: TEntityReplacementOptions): Integer;
 
-function DecodeEntities(const Scope: TEntityReplacementScope = ersSelection): Integer;
+function DecodeEntities(Scope: TEntityReplacementScope = ersSelection): Integer;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 implementation
@@ -100,7 +100,7 @@ end{LoadEntities};
 
 
 { ------------------------------------------------------------------------------------------------ }
-procedure EncodeEntities(const Scope: TEntityReplacementScope; const Options: TEntityReplacementOptions);
+procedure EncodeEntities(Scope: TEntityReplacementScope; const Options: TEntityReplacementOptions);
 var
   doc: TActiveDocument;
   DocIndex: Integer;
@@ -187,7 +187,7 @@ begin
 end;
 
 { ------------------------------------------------------------------------------------------------ }
-function DecodeEntities(const Scope: TEntityReplacementScope = ersSelection): Integer;
+function DecodeEntities(Scope: TEntityReplacementScope = ersSelection): Integer;
 const
   scDigits = '0123456789';
   scHexLetters = 'ABCDEFabcdef';

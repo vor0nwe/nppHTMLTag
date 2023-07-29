@@ -12,10 +12,11 @@ unit U_JSEncode;
 interface
 uses
   Classes,
+  U_Entities,
   NppSimpleObjects;
 
 type
-  TEntityReplacementScope = (ersSelection, ersDocument, ersAllDocuments);
+  TEntityReplacementScope = U_Entities.TEntityReplacementScope;
 
 procedure EncodeJS(Scope: TEntityReplacementScope = ersSelection);
 function  DecodeJS(Scope: TEntityReplacementScope = ersSelection): Integer;

@@ -92,7 +92,7 @@
         <DefaultFilename Value="..\Forms\fpg\src\corelib\gdi\fpgui_toolkit.lpk"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="7">
       <Unit0>
         <Filename Value="HTMLTag.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -110,21 +110,17 @@
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="..\Common\RegExpr.pas"/>
+        <Filename Value="..\LibNppPlugin\NppSimpleObjects.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="..\LibNppPlugin\NppSimpleObjects.pas"/>
+        <Filename Value="..\LibNppPlugin\nppplugin.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="..\LibNppPlugin\nppplugin.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit6>
-      <Unit7>
         <Filename Value="..\Forms\AboutForm.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit7>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
