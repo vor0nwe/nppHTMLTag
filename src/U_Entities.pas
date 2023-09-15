@@ -127,8 +127,8 @@ begin
     end;
 
     ersAllDocuments: begin
-      for DocIndex := 0 to npp.App.Documents.Count - 1 do begin
-        doc := npp.App.Documents[DocIndex].Activate;
+      for DocIndex := 0 to npp.App.Editors.Count - 1 do begin
+        doc := npp.App.Editors[DocIndex];
         Text := doc.Text;
         if DoEncodeEntities(Text, FetchEntities, Options) > 0 then begin
           doc.Text := Text;

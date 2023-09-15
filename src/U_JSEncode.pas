@@ -55,8 +55,8 @@ begin
     end;
 
     ersAllDocuments: begin
-      for DocIndex := 0 to npp.Documents.Count - 1 do begin
-        doc := npp.Documents[DocIndex].Activate;
+      for DocIndex := 0 to npp.Editors.Count - 1 do begin
+        doc := npp.Editors[DocIndex];
         Range := doc.GetRange();
         Result := Conversion(Range);
       end;

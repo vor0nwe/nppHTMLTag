@@ -16,19 +16,7 @@ interface
 {$I '..\Include\SciApi.inc'}
 
   type
-
-{$IFDEF DELPHI}
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  TAutoObjectDispatch = class(TObjectDispatch)
-  protected
-    function GetObjectDispatch(Obj: TObject): TObjectDispatch; override;
-    function GetMethodInfo(const AName: ShortString; var AInstance: TObject): PMethodInfoHeader; override;
-    function GetPropInfo(const AName: string; var AInstance: TObject; var CompIndex: Integer): PPropInfo; override;
-  end;
-{$ENDIF}
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-{$IFDEF DELPHI}{$METHODINFO ON}{$ENDIF}
     TActiveDocument = class;
     { -------------------------------------------------------------------------------------------- }
     TTextRange = class
@@ -98,7 +86,6 @@ interface
         property Length: Sci_Position   read GetLength        write SetLength;
         property Text: WideString       read GetText          write SetText;
     end;
-{$IFDEF DELPHI}{$METHODINFO OFF}{$ENDIF}
     { -------------------------------------------------------------------------------------------- }
     TTextRangeMark = class
       private
@@ -112,7 +99,6 @@ interface
     end;
 
     { -------------------------------------------------------------------------------------------- }
-{$IFDEF DELPHI}{$METHODINFO ON}{$ENDIF}
     TWindowedObject = class
       protected
         FWindowHandle: THandle;
@@ -186,25 +172,12 @@ interface
     end;
 
     { -------------------------------------------------------------------------------------------- }
-    TDocuments = class
-      private
-        FParent: TWindowedObject;
-      protected
-        function  GetCount(): cardinal; virtual;
-        function  GetItem(const AIndex: cardinal): TActiveDocument; virtual;
-      public
-        property Count: cardinal                                read GetCount;
-
-        property Item[const Index: cardinal]: TActiveDocument   read GetItem; default;
-    end;
-
-    { -------------------------------------------------------------------------------------------- }
-    TEditors = class(TDocuments)
+    TEditors = class
       private
         FList: TList;
       protected
-        function  GetCount(): cardinal; override;
-        function  GetItem(const AIndex: cardinal): TActiveDocument; override;
+        function  GetCount(): cardinal;
+        function  GetItem(const AIndex: cardinal): TActiveDocument;
       public
         constructor Create(const ANPPData: PNppData);
         destructor  Destroy(); override;
@@ -218,8 +191,6 @@ interface
     TApplication = class(TWindowedObject)
       private
         FEditors: TEditors;
-        FDocuments: TDocuments;
-
 
         function  GetDocument(): TActiveDocument;
       protected
@@ -232,11 +203,8 @@ interface
         property WindowHandle: THandle            read FWindowHandle;
 
         property Editors: TEditors                read FEditors;
-        property Documents: TDocuments            read FDocuments;
-
         property ActiveDocument: TActiveDocument  read GetDocument;
     end;
-{$IFDEF DELPHI}{$METHODINFO OFF}{$ENDIF}
 
     function GetApplication(const ANPPData: PNPPData = nil): TApplication; overload;
     function GetApplication(const ANPPData: PNPPData; Api: TSciApiLevel): TApplication; overload;
@@ -825,6 +793,7 @@ begin
   TActiveDocument(FList.Items[0]).Free;
   FList.Delete(0);
   FreeAndNil(FList);
+  inherited;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -1003,22 +972,6 @@ begin
 end;
 
 { ================================================================================================ }
-{ TDocuments }
-
-function TDocuments.GetCount: cardinal;
-begin
-  Result := FParent.SendMessage(NPPM_GETNBOPENFILES, 0, ALL_OPEN_FILES);
-end;
-
-{ ------------------------------------------------------------------------------------------------ }
-
-function TDocuments.GetItem(const AIndex: cardinal): TActiveDocument;
-begin
-{$MESSAGE HINT 'TODO: shouldn''t this return a TDocument?'}
-  Result := nil;
-end;
-
-{ ================================================================================================ }
 { TApplication }
 
 constructor TApplication.Create(const ANppData: PNppData);
@@ -1026,13 +979,10 @@ begin
   inherited Create(ANppData.nppHandle, True);
 
   FEditors := TEditors.Create(ANppData);
-  FDocuments := TDocuments.Create;
 end;
 { ------------------------------------------------------------------------------------------------ }
 destructor TApplication.Destroy;
 begin
-  if Assigned(FDocuments) then
-    FreeAndNil(FDocuments);
   if Assigned(FEditors) then
     FreeAndNil(FEditors);
 
@@ -1098,29 +1048,6 @@ begin
 
   inherited;
 end;
-
-{$IFDEF DELPHI}
-{ ================================================================================================ }
-{ TAutoObjectDispatch }
-
-function TAutoObjectDispatch.GetMethodInfo(const AName: ShortString; var AInstance: TObject): PMethodInfoHeader;
-begin
-  Result := inherited GetMethodInfo(AName, AInstance);
-end;
-
-{ ------------------------------------------------------------------------------------------------ }
-function TAutoObjectDispatch.GetObjectDispatch(Obj: TObject): TObjectDispatch;
-begin
-  Result := TAutoObjectDispatch.Create(Obj, True);
-end;
-
-{ ------------------------------------------------------------------------------------------------ }
-function TAutoObjectDispatch.GetPropInfo(const AName: string; var AInstance: TObject;
-  var CompIndex: Integer): PPropInfo;
-begin
-  Result := inherited GetPropInfo(AName, AInstance, CompIndex);
-end;
-{$ENDIF}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 initialization
