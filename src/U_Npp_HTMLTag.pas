@@ -29,13 +29,12 @@ type
   TNppPluginHTMLTag = class(TNppPlugin)
   private
     FApp: TApplication;
-    FVersionInfo: TFileVersionInfo;
-    FVersionStr: nppString;
     FOptions: TPluginOptions;
     function GetOptionsFilePath: nppString;
     function GetEntitiesFilePath: nppString;
     function GetDefaultEntitiesPath: nppString;
     function PluginNameFromModule: nppString;
+    function GetVersionString: nppString;
     function GetConfigDir: nppString;
     procedure LoadOptions;
     procedure SaveOptions;
@@ -61,7 +60,7 @@ type
 
     property App: TApplication  read FApp;
     property Options: TPluginOptions read FOptions;
-    property Version: nppString  read FVersionStr;
+    property Version: nppString  read GetVersionString;
     property OptionsConfig: nppString  read GetOptionsFilePath;
     property Entities: nppString  read GetEntitiesFilePath;
     property DefaultEntitiesPath: nppString  read GetDefaultEntitiesPath;
@@ -215,26 +214,12 @@ begin
   self.AddFuncSeparator;
 
   self.AddFuncItem('&About...', _commandAbout);
-
-  try
-     FVersionInfo := TFileVersionInfo.Create(TSpecialFolders.DLLFullName);
-     FVersionStr := PluginNameFromModule();
-     FVersionStr :=
-      Concat(FVersionStr,
-        WideFormat(' %d.%d.%d (%s bit)',
-          [FVersionInfo.MajorVersion, FVersionInfo.MinorVersion, FVersionInfo.Revision,
-          {$IFDEF CPUX64}'64'{$ELSE}'32'{$ENDIF}]));
-  except
-    FreeAndNil(FVersionInfo);
-  end;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
 destructor TNppPluginHTMLTag.Destroy;
 begin
   SaveOptions;
-  if Assigned(FVersionInfo) then
-    FreeAndNil(FVersionInfo);
   if Assigned(About) then
     FreeAndNil(About);
   inherited;
@@ -263,7 +248,7 @@ begin
     if not SupportsBigFiles then begin
       Msg := 'The installed version of HTML Tag requires Notepad++ 8.3 or newer.'#13#10
              + 'Plugin commands have been disabled.';
-      MessageBoxW(App.WindowHandle, PWideChar(Msg), PWideChar(FVersionStr), MB_ICONWARNING);
+      MessageBoxW(App.WindowHandle, PWideChar(Msg), PWideChar(Version), MB_ICONWARNING);
     end;
   except
     HandleException(ExceptObject, ExceptAddr);
@@ -472,6 +457,21 @@ var
 begin
   PluginName := ChangeFileExt(ExtractFileName(TSpecialFolders.DLLFullName), EmptyWideStr);
   Result := WideStringReplace(PluginName, '_unicode', EmptyWideStr, []);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetVersionString: nppString;
+var
+  FvInfo: TFileVersionInfo;
+begin
+  Result := WideStringReplace(Self.PluginName, '&', EmptyWideStr, []);
+  try
+    FvInfo := TFileVersionInfo.Create(TSpecialFolders.DLLFullName);
+    Result := WideFormat('%s %d.%d.%d (%d bit)',
+      [Result, FvInfo.MajorVersion, FvInfo.MinorVersion, FvInfo.Revision, {$IFDEF CPUX64}64{$ELSE}32{$ENDIF}]);
+  finally
+    FreeAndNil(FvInfo);
+  end;
 end;
 
 { ------------------------------------------------------------------------------------------------ }

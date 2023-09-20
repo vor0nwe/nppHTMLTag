@@ -22,7 +22,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="4"/>
       <RevisionNr Value="1"/>
-      <StringTable Comments="https://github.com/rdipardo/nppHTMLTag/issues" CompanyName="Voronwë" FileDescription="HTMLTag plugin for Notepad++" InternalName="$NameOnly($(ProjFile))" LegalCopyright="Martijn Coppoolse" OriginalFilename="$NameOnly($(ProjFile)).dll" ProductName="$NameOnly($(ProjFile))" ProductVersion="1.4.1.0"/>
+      <StringTable Comments="https://github.com/rdipardo/nppHTMLTag/issues" CompanyName="Voronwë" FileDescription="HTML Tag plugin for Notepad++" InternalName="$NameOnly($(ProjFile))" LegalCopyright="Martijn Coppoolse" OriginalFilename="$NameOnly($(ProjFile)).dll" ProductName="$NameOnly($(ProjFile))" ProductVersion="1.4.1.0"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Debug" Default="True"/>

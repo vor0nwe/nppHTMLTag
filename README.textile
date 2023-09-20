@@ -1,4 +1,4 @@
-h1. HTMLTag plugin for Notepad++
+h1. HTML Tag plugin for Notepad++
 
 h2. Downloads
 

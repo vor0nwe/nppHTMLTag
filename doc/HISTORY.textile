@@ -7,7 +7,7 @@ See these related discussion threads in the "npp-plugins" SourceForge project:
 
 h2. Releases
 
-_Details of current releases can be found in "the change log":https://bitbucket.org/rdipardo/htmltag/src/default/NEWS.textile_
+bq. Details of current releases can be found in "the change log":https://bitbucket.org/rdipardo/htmltag/src/default/NEWS.textile
 
 * 1.1.0 - 2017-09-04 20:15
 ** Added: option to encode line break entities as well "[689eef6cee]":689eef6cee
