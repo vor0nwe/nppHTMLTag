@@ -10,8 +10,6 @@ begin
   case dwReason of
   DLL_PROCESS_ATTACH:
   begin
-    // create the main object
-    //Npp := TDbgpNppPlugin.Create;
   end;
   DLL_PROCESS_DETACH:
   begin
@@ -22,42 +20,34 @@ begin
       ShowException(ExceptObject, ExceptAddr);
     end;
   end;
-  //DLL_THREAD_ATTACH: MessageBeep(0);
-  //DLL_THREAD_DETACH: MessageBeep(0);
   end;
 end;
 
-procedure setInfo(NppData: TNppData); cdecl; export;
+procedure setInfo(NppData: TNppData); cdecl;
 begin
   if Assigned(Npp) then
     Npp.SetInfo(NppData);
 end;
 
-function getName(): nppPchar; cdecl; export;
+function getName(): nppPchar; cdecl;
 begin
   if Assigned(Npp) then
     Result := Npp.GetName
-  else
-    Result := '(plugin not initialized)';
 end;
 
-function getFuncsArray(var nFuncs:integer):Pointer;cdecl; export;
+function getFuncsArray(var nFuncs:integer): Pointer; cdecl;
 begin
   if Assigned(Npp) then
     Result := Npp.GetFuncsArray(nFuncs)
-  else begin
-    Result := nil;
-    nFuncs := 0;
-  end;
 end;
 
-procedure beNotified(sn: PSCNotification); cdecl; export;
+procedure beNotified(sn: PSCNotification); cdecl;
 begin
   if Assigned(Npp) then
     Npp.BeNotified(sn);
 end;
 
-function messageProc(msg: Integer; _wParam: WPARAM; _lParam: LPARAM): LRESULT; cdecl; export;
+function messageProc(msg: Integer; _wParam: WPARAM; _lParam: LPARAM): LRESULT; cdecl;
 var xmsg:TMessage;
 begin
   xmsg.Msg := msg;
@@ -69,7 +59,7 @@ begin
   Result := xmsg.Result;
 end;
 
-function isUnicode : Boolean; cdecl; export;
+function isUnicode : Boolean; cdecl;
 begin
   Result := true;
 end;
