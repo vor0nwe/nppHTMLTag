@@ -31,14 +31,16 @@ end;
 
 function getName(): nppPchar; cdecl;
 begin
+  Result := nil;
   if Assigned(Npp) then
-    Result := Npp.GetName
+    Result := Npp.GetName;
 end;
 
 function getFuncsArray(var nFuncs:integer): Pointer; cdecl;
 begin
+  Result := nil;
   if Assigned(Npp) then
-    Result := Npp.GetFuncsArray(nFuncs)
+    Result := Npp.GetFuncsArray(nFuncs);
 end;
 
 procedure beNotified(sn: PSCNotification); cdecl;
