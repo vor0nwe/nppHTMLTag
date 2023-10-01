@@ -46,10 +46,6 @@
           </Parsing>
           <CodeGeneration>
             <RelocatableUnit Value="True"/>
-            <Checks>
-              <RangeChecks Value="True"/>
-              <OverflowChecks Value="True"/>
-            </Checks>
             <TargetCPU Value="x86_64"/>
             <Optimizations>
               <OptimizationLevel Value="3"/>
