@@ -82,11 +82,14 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
         <PackageName Value="fpgui_toolkit"/>
         <DefaultFilename Value="..\Forms\fpg\src\corelib\gdi\fpgui_toolkit.lpk"/>
       </Item1>
+      <Item2>
+        <PackageName Value="LazUtils"/>
+      </Item2>
     </RequiredPackages>
     <Units Count="7">
       <Unit0>

@@ -11,8 +11,10 @@ unit U_Npp_HTMLTag;
 interface
 
 uses
+  Classes,
   SysUtils, Windows,
   NppPlugin,
+  LocalizedNppPlugin,
   fpg_main,
   AboutForm,
   NppSimpleObjects, L_VersionInfoW;
@@ -26,16 +28,20 @@ type
   end;
   PPluginOption = ^LongBool;
 
-  TNppPluginHTMLTag = class(TNppPlugin)
+  TPluginMessages = class;
+  TNppPluginHTMLTag = class(TLocalizedNppPlugin)
   private
     FApp: TApplication;
+    FMessages: TPluginMessages;
     FOptions: TPluginOptions;
     function GetOptionsFilePath: nppString;
     function GetEntitiesFilePath: nppString;
     function GetDefaultEntitiesPath: nppString;
+    function GetTranslationsFilePath: nppString;
     function PluginNameFromModule: nppString;
     function GetVersionString: nppString;
     function GetConfigDir: nppString;
+    procedure LoadTranslations;
     procedure LoadOptions;
     procedure SaveOptions;
     procedure FindAndDecode(const KeyCode: Integer; Cmd: TDecodeCmd = dcAuto);
@@ -54,6 +60,7 @@ type
     procedure SetInfo(NppData: TNppData); override;
     procedure DoNppnToolbarModification; override;
     procedure DoCharAdded({%H-}const hwnd: HWND; const ch: Integer); override;
+    function GetMessage(const Key: string): WideString; override;
     procedure ToggleOption(OptionPtr: PPluginOption; MenuPos: TCmdMenuPosition);
     procedure ShellExecute(const FullName: WideString; const Verb: WideString = 'open'; const WorkingDir: WideString = '';
       const ShowWindow: Integer = SW_SHOWDEFAULT);
@@ -65,6 +72,11 @@ type
     property Entities: nppString  read GetEntitiesFilePath;
     property DefaultEntitiesPath: nppString  read GetDefaultEntitiesPath;
     property PluginConfigDir: nppString read GetConfigDir;
+  end;
+
+  TPluginMessages = class(TStringList)
+  public
+    constructor Create;
   end;
 
 procedure _commandFindMatchingTag(); cdecl;
@@ -176,40 +188,40 @@ begin
   self.PluginName := '&HTML Tag';
 
   sk := self.MakeShortcutKey(False, True, False, 'T'); // Alt-T
-  self.AddFuncItem('&Find matching tag', _commandFindMatchingTag, sk);
+  self.AddFuncItem(GetMessage('menu_0'), _commandFindMatchingTag, sk);
 
   sk := self.MakeShortcutKey(False, True, False, #113); // Alt-F2
-  self.AddFuncItem('Select &matching tags', _commandSelectMatchingTags, sk);
+  self.AddFuncItem(GetMessage('menu_1'), _commandSelectMatchingTags, sk);
 
   sk := self.MakeShortcutKey(False, True, True, 'T'); // Alt-Shift-T
-  self.AddFuncItem('&Select tag and contents', _commandSelectTagContents, sk);
+  self.AddFuncItem(GetMessage('menu_2'), _commandSelectTagContents, sk);
 
   sk := self.MakeShortcutKey(True, True, False, 'T'); // Ctrl-Alt-T
-  self.AddFuncItem('Select tag &contents only', _commandSelectTagContentsOnly, sk);
+  self.AddFuncItem(GetMessage('menu_3'), _commandSelectTagContentsOnly, sk);
 
   self.AddFuncSeparator;
 
   sk := self.MakeShortcutKey(True, False, False, 'E'); // Ctrl-E
-  self.AddFuncItem('&Encode entities', _commandEncodeEntities, sk);
+  self.AddFuncItem(GetMessage('menu_4'), _commandEncodeEntities, sk);
 
   sk := self.MakeShortcutKey(True, True, False, 'E'); // Ctrl-Alt-E
-  self.AddFuncItem('Encode entities (incl. line &breaks)', _commandEncodeEntitiesInclLineBreaks, sk);
+  self.AddFuncItem(GetMessage('menu_5'), _commandEncodeEntitiesInclLineBreaks, sk);
 
   sk := self.MakeShortcutKey(True, False, True, 'E'); // Ctrl-Shift-E
-  self.AddFuncItem('&Decode entities', _commandDecodeEntities, sk);
+  self.AddFuncItem(GetMessage('menu_6'), _commandDecodeEntities, sk);
 
   self.AddFuncSeparator;
 
   sk := self.MakeShortcutKey(False, True, False, 'J'); // Alt-J
-  self.AddFuncItem('Encode &JS', _commandEncodeJS, sk);
+  self.AddFuncItem(GetMessage('menu_7'), _commandEncodeJS, sk);
 
   sk := self.MakeShortcutKey(False, True, True, 'J'); // Alt-Shift-J
-  self.AddFuncItem('Dec&ode JS', _commandDecodeJS, sk);
+  self.AddFuncItem(GetMessage('menu_8'), _commandDecodeJS, sk);
 
   self.AddFuncSeparator;
 
-  self.AddFuncItem('Automatically decode entities', _toggleLiveEntityecoding, nil);
-  self.AddFuncItem('Automatically decode Unicode characters', _toggleLiveUnicodeDecoding, nil);
+  self.AddFuncItem(GetMessage('menu_9'), _toggleLiveEntityecoding, nil);
+  self.AddFuncItem(GetMessage('menu_10'), _toggleLiveUnicodeDecoding, nil);
 
   self.AddFuncSeparator;
 
@@ -220,6 +232,8 @@ end;
 destructor TNppPluginHTMLTag.Destroy;
 begin
   SaveOptions;
+  if Assigned(FMessages) then
+    FreeAndNil(FMessages);
   if Assigned(About) then
     FreeAndNil(About);
   inherited;
@@ -237,8 +251,6 @@ end;
 
 { ------------------------------------------------------------------------------------------------ }
 procedure TNppPluginHTMLTag.DoNppnToolbarModification;
-var
-  Msg: WideString;
 begin
   inherited;
   FApp := GetApplication(@Self.NppData, NppSimpleObjects.TSciApiLevel(Self.GetApiLevel));
@@ -246,9 +258,7 @@ begin
 {$IFDEF CPUX64}
   try
     if not SupportsBigFiles then begin
-      Msg := 'The installed version of HTML Tag requires Notepad++ 8.3 or newer.'#13#10
-             + 'Plugin commands have been disabled.';
-      MessageBoxW(App.WindowHandle, PWideChar(Msg), PWideChar(Version), MB_ICONWARNING);
+      MessageBoxW(App.WindowHandle, PWideChar(Self.GetMessage('non_compat')), PWideChar(Version), MB_ICONWARNING);
     end;
   except
     HandleException(ExceptObject, ExceptAddr);
@@ -264,6 +274,20 @@ begin
     Exit;
 {$ENDIF}
   FindAndDecode(ch);
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetMessage(const Key: string): WideString;
+var
+  Msg: string;
+begin
+  if not Assigned(FMessages) then
+    LoadTranslations;
+
+  Result := '[no translation]';
+  Msg := FMessages.Values[Key];
+  if not SameText(Msg, EmptyStr) then
+    Result := UTF8Decode(Msg);
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -451,6 +475,12 @@ begin
 end;
 
 { ------------------------------------------------------------------------------------------------ }
+function TNppPluginHTMLTag.GetTranslationsFilePath: nppString;
+begin
+  Result := IncludeTrailingPathDelimiter(TSpecialFolders.DLL) + PluginNameFromModule() + '-translations.ini';
+end;
+
+{ ------------------------------------------------------------------------------------------------ }
 function TNppPluginHTMLTag.PluginNameFromModule: nppString;
 var
   PluginName: WideString;
@@ -479,6 +509,32 @@ function TNppPluginHTMLTag.GetConfigDir: nppString;
 begin
   Result := IncludeTrailingPathDelimiter(Self.ConfigDir) + PluginNameFromModule();
   if (not DirectoryExists(Result)) then CreateDir(Result);
+end;
+
+procedure TNppPluginHTMLTag.LoadTranslations;
+var
+  Translations: TUtf8IniFile;
+  MsgList: TStringlist;
+  Key, DefaultMsg: String;
+begin
+  FMessages := TPluginMessages.Create;
+  if (not FileExists(GetTranslationsFilePath)) then
+    Exit;
+
+  MsgList := TStringList.Create;
+  MsgList.Duplicates := dupAccept;
+  try
+    Translations := TUtf8IniFile.Create(GetTranslationsFilePath);
+    Translations.ReadSection(Self.Language, MsgList);
+    for Key in MsgList do begin
+      DefaultMsg := FMessages.Values[Key];
+      FMessages.Values[Key] := UTF8Encode(Translations.ReadString(Self.Language, Key, DefaultMsg));
+    end;
+  finally
+    FreeAndNil(MsgList);
+    if Assigned(Translations) then
+      FreeAndNil(Translations);
+  end;
 end;
 
 { ------------------------------------------------------------------------------------------------ }
@@ -606,6 +662,36 @@ begin
     doc.CurrentPosition := caret;
   end;
 end;
+
+{ ================================================================================================ }
+{ TPluginMessages }
+
+{ ------------------------------------------------------------------------------------------------ }
+constructor TPluginMessages.Create;
+const
+  DefaultMsgs: array[0..13] of String = (
+    'menu_0=&Find matching tag',
+    'menu_1=Select &matching tags',
+    'menu_2=&Select tag and contents',
+    'menu_3=Select tag &contents only',
+    'menu_4=&Encode entities',
+    'menu_5=Encode entities (incl. line &breaks)',
+    'menu_6=&Decode entities',
+    'menu_7=Encode &Unicode characters',
+    'menu_8=Dec&ode Unicode characters',
+    'menu_9=Automatically decode entities',
+    'menu_10=Automatically decode Unicode characters',
+    'menu_11=&About...',
+    'err_compat=The installed version of HTML Tag requires Notepad++ 8.3 or newer. Plugin commands have been disabled.',
+    'err_config=Missing Entities File'
+  );
+begin
+  inherited;
+  Self.AlwaysQuote := True;
+  Self.NameValueSeparator := #61;
+  Self.AddStrings(DefaultMsgs);
+end;
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 initialization
